@@ -8,16 +8,22 @@ import (
 	"strconv"
 )
 
-func readInput(file *os.File) []int {
+func readInput(file *os.File) ([]int, int) {
 	scanner := bufio.NewScanner(file)
 	numbers := []int{0}
 	index := 0
+	max := 0
 
 	for scanner.Scan() {
 		line := scanner.Text()
 		if line == "" {
+			if numbers[index] > max {
+				max = numbers[index]
+			}
+
 			index++
 			numbers = append(numbers, 0)
+
 			continue
 		}
 
@@ -28,7 +34,7 @@ func readInput(file *os.File) []int {
 		}
 	}
 
-	return numbers
+	return numbers, max
 }
 
 func main() {
@@ -43,6 +49,6 @@ func main() {
 
 	}
 
-	numbers := readInput(file)
-	fmt.Println(numbers)
+	_, max := readInput(file)
+	fmt.Println("Part1:", max)
 }
