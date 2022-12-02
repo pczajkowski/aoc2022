@@ -65,6 +65,20 @@ func roundsScore(rounds []round) int {
 	return sum
 }
 
+func part2(rounds []round, winLose map[byte][2]byte, points map[byte]int) int {
+	total := 0
+	for i := range rounds {
+		if rounds[i].me == 'Y' {
+			total += 3 + points[rounds[i].elf]
+		} else if rounds[i].me == 'X' {
+			total += points[winLose[rounds[i].elf][1]]
+		} else {
+			total += 6 + points[winLose[rounds[i].elf][0]]
+		}
+	}
+
+	return total
+}
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -87,4 +101,11 @@ func main() {
 
 	rounds := readInput(file, points)
 	fmt.Println("Part1:", roundsScore(rounds))
+
+	winLose := make(map[byte][2]byte)
+	winLose['A'] = [2]byte{'Y', 'Z'}
+	winLose['B'] = [2]byte{'Z', 'X'}
+	winLose['C'] = [2]byte{'X', 'Y'}
+
+	fmt.Println("Part2:", part2(rounds, winLose, points))
 }
