@@ -44,16 +44,20 @@ func readInput(file *os.File) []rucksack {
 	return rucksacks
 }
 
+func getPriority(item byte) int {
+	if item < 96 {
+		return int(item) - 38
+	}
+
+	return int(item) - 96
+}
+
 func part1(rucksacks []rucksack) int {
 	sum := 0
 	for i := range rucksacks {
 		for key, _ := range rucksacks[i].first {
 			if rucksacks[i].second[key] > 0 {
-				if key < 96 {
-					sum += int(key) - 38
-				} else {
-					sum += int(key) - 96
-				}
+				sum += getPriority(key)
 			}
 		}
 	}
