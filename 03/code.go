@@ -65,6 +65,44 @@ func part1(rucksacks []rucksack) int {
 	return sum
 }
 
+func checkCompartments(compartment map[byte]int, rucksacks []rucksack, index int) int {
+	for key, _ := range compartment {
+		if rucksacks[index+1].first[key] == 0 && rucksacks[index+1].second[key] == 0 {
+			continue
+		}
+
+		if rucksacks[index+2].first[key] == 0 && rucksacks[index+2].second[key] == 0 {
+			continue
+		}
+
+		return getPriority(key)
+	}
+
+	return 0
+}
+
+func part2(rucksacks []rucksack) int {
+	edge := len(rucksacks) - 2
+	index := 0
+	sum := 0
+
+	for {
+		if index >= edge {
+			break
+		}
+
+		result := checkCompartments(rucksacks[index].first, rucksacks, index)
+		if result == 0 {
+			result = checkCompartments(rucksacks[index].second, rucksacks, index)
+		}
+
+		sum += result
+		index += 3
+	}
+
+	return sum
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -79,4 +117,5 @@ func main() {
 
 	rucksacks := readInput(file)
 	fmt.Println("Part1:", part1(rucksacks))
+	fmt.Println("Part2:", part2(rucksacks))
 }
