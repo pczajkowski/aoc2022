@@ -35,7 +35,7 @@ func readInput(file *os.File) []pair {
 }
 
 func contains(first [2]int, second [2]int) bool {
-	if first[0] >= second[0] && second[0] < first[1] && first[0] > second[1] && second[1] <= first[1] {
+	if second[0] >= first[0] && second[0] <= first[1] && second[1] >= first[0] && second[1] <= first[1] {
 		return true
 	}
 
