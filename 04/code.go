@@ -53,6 +53,25 @@ func part1(pairs []pair) int {
 	return count
 }
 
+func overlaps(first [2]int, second [2]int) bool {
+	if second[0] >= first[0] && second[0] <= first[1] || second[1] >= first[0] && second[1] <= first[1] {
+		return true
+	}
+
+	return false
+}
+
+func part2(pairs []pair) int {
+	count := 0
+	for i := range pairs {
+		if overlaps(pairs[i].first, pairs[i].second) || overlaps(pairs[i].second, pairs[i].first) {
+			count++
+		}
+	}
+
+	return count
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -67,4 +86,5 @@ func main() {
 
 	pairs := readInput(file)
 	fmt.Println("Part1:", part1(pairs))
+	fmt.Println("Part2:", part2(pairs))
 }
