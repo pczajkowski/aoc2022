@@ -34,6 +34,25 @@ func readInput(file *os.File) []pair {
 	return pairs
 }
 
+func contains(first [2]int, second [2]int) bool {
+	if first[0] >= second[0] && second[0] < first[1] && first[0] > second[1] && second[1] <= first[1] {
+		return true
+	}
+
+	return false
+}
+
+func part1(pairs []pair) int {
+	count := 0
+	for i := range pairs {
+		if contains(pairs[i].first, pairs[i].second) || contains(pairs[i].second, pairs[i].first) {
+			count++
+		}
+	}
+
+	return count
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -47,5 +66,5 @@ func main() {
 	}
 
 	pairs := readInput(file)
-	fmt.Println(pairs)
+	fmt.Println("Part1:", part1(pairs))
 }
