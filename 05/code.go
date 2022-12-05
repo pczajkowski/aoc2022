@@ -8,9 +8,9 @@ import (
 )
 
 type move struct {
-	what int
-	from int
-	to   int
+	quantity int
+	from     int
+	to       int
 }
 
 func parseBoxes(line string, boxes [][]byte) [][]byte {
@@ -54,9 +54,19 @@ func parseBoxes(line string, boxes [][]byte) [][]byte {
 	return boxes
 }
 
+func reverseBoxes(boxes [][]byte) [][]byte {
+	for x := range boxes {
+		for i, j := 0, len(boxes[x])-1; i < j; i, j = i+1, j-1 {
+			boxes[x][i], boxes[x][j] = boxes[x][j], boxes[x][i]
+		}
+	}
+
+	return boxes
+}
+
 func parseMove(line string) move {
 	var current move
-	n, err := fmt.Sscanf(line, "move %d from %d to %d", &current.what, &current.from, &current.to)
+	n, err := fmt.Sscanf(line, "move %d from %d to %d", &current.quantity, &current.from, &current.to)
 	if n != 3 || err != nil {
 		log.Fatal("Can't parse move!", err)
 	}
@@ -85,7 +95,31 @@ func readInput(file *os.File) ([][]byte, []move) {
 		moves = append(moves, parseMove(line))
 	}
 
-	return boxes, moves
+	return reverseBoxes(boxes), moves
+}
+
+func moveBox(boxes [][]byte, action move) [][]byte {
+	last := len(boxes[action.from-1]) - 1
+	letter := boxes[action.from-1][last]
+	boxes[action.from-1] = boxes[action.from-1][:last]
+	boxes[action.to-1] = append(boxes[action.to-1], letter)
+
+	return boxes
+}
+
+func part1(boxes [][]byte, moves []move) string {
+	for i := range moves {
+		for j := 0; j < moves[i].quantity; j++ {
+			moveBox(boxes, moves[i])
+		}
+	}
+
+	var word []byte
+	for i := range boxes {
+		word = append(word, boxes[i][len(boxes[i])-1])
+	}
+
+	return string(word)
 }
 
 func main() {
@@ -101,5 +135,5 @@ func main() {
 	}
 
 	boxes, moves := readInput(file)
-	fmt.Println(boxes, moves)
+	fmt.Println("Part1:", part1(boxes, moves))
 }
