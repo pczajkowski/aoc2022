@@ -122,6 +122,38 @@ func part1(boxes [][]byte, moves []move) string {
 	return string(word)
 }
 
+func moveBoxes(boxes [][]byte, action move) [][]byte {
+	toTake := len(boxes[action.from-1]) - action.quantity
+	boxes[action.to-1] = append(boxes[action.to-1], boxes[action.from-1][toTake:]...)
+	boxes[action.from-1] = boxes[action.from-1][:toTake]
+
+	return boxes
+}
+
+func part2(boxes [][]byte, moves []move) string {
+	for i := range moves {
+		moveBoxes(boxes, moves[i])
+	}
+
+	var word []byte
+	for i := range boxes {
+		word = append(word, boxes[i][len(boxes[i])-1])
+	}
+
+	return string(word)
+}
+
+func copyBoxes(boxes [][]byte) [][]byte {
+	var copied [][]byte
+
+	for i := range boxes {
+		copied = append(copied, make([]byte, len(boxes[i])))
+		copy(copied[i], boxes[i])
+	}
+
+	return copied
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -135,5 +167,8 @@ func main() {
 	}
 
 	boxes, moves := readInput(file)
+	originalBoxes := copyBoxes(boxes)
+
 	fmt.Println("Part1:", part1(boxes, moves))
+	fmt.Println("Part2:", part2(originalBoxes, moves))
 }
