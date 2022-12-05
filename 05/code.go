@@ -54,6 +54,16 @@ func parseBoxes(line string, boxes [][]byte) [][]byte {
 	return boxes
 }
 
+func parseMove(line string) move {
+	var current move
+	n, err := fmt.Sscanf(line, "move %d from %d to %d", &current.what, &current.from, &current.to)
+	if n != 3 || err != nil {
+		log.Fatal("Can't parse move!", err)
+	}
+
+	return current
+}
+
 func readInput(file *os.File) ([][]byte, []move) {
 	scanner := bufio.NewScanner(file)
 	var moves []move
@@ -71,6 +81,8 @@ func readInput(file *os.File) ([][]byte, []move) {
 			boxes = parseBoxes(line, boxes)
 			continue
 		}
+
+		moves = append(moves, parseMove(line))
 	}
 
 	return boxes, moves
@@ -88,6 +100,6 @@ func main() {
 
 	}
 
-	boxes, _ := readInput(file)
-	fmt.Println(boxes)
+	boxes, moves := readInput(file)
+	fmt.Println(boxes, moves)
 }
