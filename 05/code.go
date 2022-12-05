@@ -71,6 +71,9 @@ func parseMove(line string) move {
 		log.Fatal("Can't parse move!", err)
 	}
 
+	current.from--
+	current.to--
+
 	return current
 }
 
@@ -99,10 +102,10 @@ func readInput(file *os.File) ([][]byte, []move) {
 }
 
 func moveBox(boxes [][]byte, action move) [][]byte {
-	last := len(boxes[action.from-1]) - 1
-	letter := boxes[action.from-1][last]
-	boxes[action.from-1] = boxes[action.from-1][:last]
-	boxes[action.to-1] = append(boxes[action.to-1], letter)
+	last := len(boxes[action.from]) - 1
+	letter := boxes[action.from][last]
+	boxes[action.from] = boxes[action.from][:last]
+	boxes[action.to] = append(boxes[action.to], letter)
 
 	return boxes
 }
@@ -123,9 +126,9 @@ func part1(boxes [][]byte, moves []move) string {
 }
 
 func moveBoxes(boxes [][]byte, action move) [][]byte {
-	toTake := len(boxes[action.from-1]) - action.quantity
-	boxes[action.to-1] = append(boxes[action.to-1], boxes[action.from-1][toTake:]...)
-	boxes[action.from-1] = boxes[action.from-1][:toTake]
+	toTake := len(boxes[action.from]) - action.quantity
+	boxes[action.to] = append(boxes[action.to], boxes[action.from][toTake:]...)
+	boxes[action.from] = boxes[action.from][:toTake]
 
 	return boxes
 }
