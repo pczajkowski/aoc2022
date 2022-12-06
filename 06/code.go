@@ -26,7 +26,7 @@ func check(duplicates map[byte]int) bool {
 	return true
 }
 
-func part1(text []byte) int {
+func process(text []byte, limit int) int {
 	count := 0
 	toDelete := 0
 	duplicates := make(map[byte]int)
@@ -35,7 +35,7 @@ func part1(text []byte) int {
 		count++
 
 		duplicates[text[i]]++
-		if count-toDelete > 3 {
+		if count-toDelete > limit {
 			if check(duplicates) {
 				break
 			}
@@ -55,5 +55,6 @@ func main() {
 
 	filePath := os.Args[1]
 	text := readInput(filePath)
-	fmt.Println("Part1:", part1(text))
+	fmt.Println("Part1:", process(text, 3))
+	fmt.Println("Part2:", process(text, 13))
 }
