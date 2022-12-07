@@ -16,8 +16,8 @@ type item struct {
 type dir struct {
 	name   string
 	parent *dir
-	dirs   []dir
-	files  []item
+	dirs   []*dir
+	files  []*item
 }
 
 func cd(line string, current *dir, dirsRead map[string]*dir, root *dir) *dir {
@@ -36,7 +36,7 @@ func cd(line string, current *dir, dirsRead map[string]*dir, root *dir) *dir {
 		current, _ = dirsRead[name]
 		if current == nil {
 			newDir := dir{name: name, parent: parent}
-			parent.dirs = append(parent.dirs, newDir)
+			parent.dirs = append(parent.dirs, &newDir)
 			current = &newDir
 			dirsRead[name] = current
 		}
@@ -76,13 +76,42 @@ func readInput(file *os.File) dir {
 					log.Fatal("Can't parse cd:", err)
 				}
 
-				current.files = append(current.files, newFile)
+				current.files = append(current.files, &newFile)
 			}
 		}
 
 	}
 
 	return root
+}
+
+func getSizes(root dir, sizes []int) (int, []int) {
+	size := 0
+	for i := range root.files {
+		size += root.files[i].size
+	}
+
+	for i := range root.dirs {
+		var c int
+		c, sizes = getSizes(*root.dirs[i], sizes)
+		size += c
+	}
+
+	sizes = append(sizes, size)
+	return size, sizes
+}
+
+func part1(root dir) int {
+	_, sizes := getSizes(root, []int{})
+
+	sum := 0
+	for i := range sizes {
+		if sizes[i] < 100000 {
+			sum += sizes[i]
+		}
+	}
+
+	return sum
 }
 
 func main() {
@@ -98,5 +127,5 @@ func main() {
 	}
 
 	root := readInput(file)
-	fmt.Println(root)
+	fmt.Println("Part1:", part1(root))
 }
