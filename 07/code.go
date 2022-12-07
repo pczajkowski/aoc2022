@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -109,9 +110,7 @@ func getSizes(root dir, sizes []int) (int, []int) {
 	return size, sizes
 }
 
-func part1(root dir) int {
-	_, sizes := getSizes(root, []int{})
-
+func part1(sizes []int) int {
 	sum := 0
 	for i := range sizes {
 		if sizes[i] < 100000 {
@@ -120,6 +119,20 @@ func part1(root dir) int {
 	}
 
 	return sum
+}
+
+func part2(sizes []int, total int, fsSize int, needed int) int {
+	unused := fsSize - total
+	needed -= unused
+
+	sort.Ints(sizes)
+	for i := range sizes {
+		if sizes[i] >= needed {
+			return sizes[i]
+		}
+	}
+
+	return 0
 }
 
 func main() {
@@ -135,5 +148,7 @@ func main() {
 	}
 
 	root := readInput(file)
-	fmt.Println("Part1:", part1(root))
+	total, sizes := getSizes(root, []int{})
+	fmt.Println("Part1:", part1(sizes))
+	fmt.Println("Part2:", part2(sizes, total, 70000000, 30000000))
 }
