@@ -20,7 +20,17 @@ type dir struct {
 	files  []*item
 }
 
-func cd(line string, current *dir, dirsRead map[string]*dir, root *dir) *dir {
+func parentHasDir(parent *dir, name string) *dir {
+	for i := range parent.dirs {
+		if parent.dirs[i].name == name {
+			return parent.dirs[i]
+		}
+	}
+
+	return nil
+}
+
+func cd(line string, current *dir, root *dir) *dir {
 	var name string
 	n, err := fmt.Sscanf(line, "$ cd %s", &name)
 	if n != 1 || err != nil {
@@ -33,12 +43,11 @@ func cd(line string, current *dir, dirsRead map[string]*dir, root *dir) *dir {
 		current = current.parent
 	} else {
 		parent := current
-		current, _ = dirsRead[name]
+		current = parentHasDir(parent, name)
 		if current == nil {
 			newDir := dir{name: name, parent: parent}
 			parent.dirs = append(parent.dirs, &newDir)
 			current = &newDir
-			dirsRead[name] = current
 		}
 	}
 
@@ -48,7 +57,6 @@ func cd(line string, current *dir, dirsRead map[string]*dir, root *dir) *dir {
 func readInput(file *os.File) dir {
 	scanner := bufio.NewScanner(file)
 	root := dir{name: "/"}
-	dirsRead := make(map[string]*dir)
 	var current *dir
 	read := false
 
@@ -60,7 +68,7 @@ func readInput(file *os.File) dir {
 
 		if strings.HasPrefix(line, "$ cd") {
 			read = false
-			current = cd(line, current, dirsRead, &root)
+			current = cd(line, current, &root)
 		} else if strings.HasPrefix(line, "$ ls") {
 			read = true
 			continue
