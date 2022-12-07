@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-type file struct {
+type item struct {
 	name string
 	size int
 }
@@ -17,7 +17,7 @@ type dir struct {
 	name   string
 	parent *dir
 	dirs   []dir
-	files  []file
+	files  []item
 }
 
 func cd(line string, current *dir, dirsRead map[string]*dir, root *dir) *dir {
@@ -38,7 +38,6 @@ func cd(line string, current *dir, dirsRead map[string]*dir, root *dir) *dir {
 			newDir := dir{name: name, parent: parent}
 			parent.dirs = append(parent.dirs, newDir)
 			current = &newDir
-			fmt.Println(name, current, newDir)
 			dirsRead[name] = current
 		}
 	}
@@ -51,6 +50,7 @@ func readInput(file *os.File) dir {
 	root := dir{name: "/"}
 	dirsRead := make(map[string]*dir)
 	var current *dir
+	read := false
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -59,9 +59,27 @@ func readInput(file *os.File) dir {
 		}
 
 		if strings.HasPrefix(line, "$ cd") {
+			read = false
 			current = cd(line, current, dirsRead, &root)
-			fmt.Println(line, current)
+		} else if strings.HasPrefix(line, "$ ls") {
+			read = true
+			continue
 		}
+
+		if read {
+			if strings.HasPrefix(line, "dir ") {
+				continue
+			} else {
+				var newFile item
+				n, err := fmt.Sscanf(line, "%d %s", &newFile.size, &newFile.name)
+				if n != 2 || err != nil {
+					log.Fatal("Can't parse cd:", err)
+				}
+
+				current.files = append(current.files, newFile)
+			}
+		}
+
 	}
 
 	return root
