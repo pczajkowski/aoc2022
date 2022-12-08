@@ -61,7 +61,7 @@ func visibleFromTop(x int, y int, trees [][]byte) bool {
 
 func visibleFromBottom(x int, y int, trees [][]byte, limit int) bool {
 	visible := true
-	for i := x + 1; i < limit; i++ {
+	for i := y + 1; i < limit; i++ {
 		if trees[i][x] >= trees[y][x] {
 			visible = false
 			break
