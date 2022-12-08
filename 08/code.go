@@ -107,6 +107,82 @@ func part1(trees [][]byte) int {
 	return visible
 }
 
+func numberFromLeft(x int, y int, trees [][]byte) int {
+	count := 0
+	for i := x - 1; i >= 0; i-- {
+		count++
+		if trees[y][i] >= trees[y][x] {
+			break
+		}
+	}
+
+	return count
+}
+
+func numberFromRight(x int, y int, trees [][]byte, limit int) int {
+	count := 0
+	for i := x + 1; i < limit; i++ {
+		count++
+		if trees[y][i] >= trees[y][x] {
+			break
+		}
+	}
+
+	return count
+}
+
+func numberFromTop(x int, y int, trees [][]byte) int {
+	count := 0
+	for i := y - 1; i >= 0; i-- {
+		count++
+		if trees[i][x] >= trees[y][x] {
+			break
+		}
+	}
+
+	return count
+}
+
+func numberFromBottom(x int, y int, trees [][]byte, limit int) int {
+	count := 0
+	for i := y + 1; i < limit; i++ {
+		count++
+		if trees[i][x] >= trees[y][x] {
+			break
+		}
+	}
+
+	return count
+}
+
+func numberVisible(x int, y int, trees [][]byte, width int, height int) int {
+	count := 1
+
+	count *= numberFromLeft(x, y, trees)
+	count *= numberFromRight(x, y, trees, width)
+	count *= numberFromTop(x, y, trees)
+	count *= numberFromBottom(x, y, trees, height)
+
+	return count
+}
+
+func part2(trees [][]byte) int {
+	width := len(trees[0])
+	height := len(trees)
+	max := 0
+
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			count := numberVisible(x, y, trees, width, height)
+			if count > max {
+				max = count
+			}
+		}
+	}
+
+	return max
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -121,4 +197,5 @@ func main() {
 
 	trees := readInput(file)
 	fmt.Println("Part1:", part1(trees))
+	fmt.Println("Part2:", part2(trees))
 }
