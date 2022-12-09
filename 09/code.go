@@ -34,128 +34,81 @@ func readInput(file *os.File) []move {
 	return moves
 }
 
+type point struct {
+	x int
+	y int
+}
+
 type headTail struct {
-	headX, headY int
-	tailX, tailY int
+	head point
+	tail point
 }
 
 func tailInVicinity(tracker headTail) bool {
-	return tracker.tailX >= tracker.headX-1 && tracker.tailX <= tracker.headX+1 && tracker.tailY >= tracker.headY-1 && tracker.tailY <= tracker.headY+1
+	return tracker.tail.x >= tracker.head.x-1 && tracker.tail.x <= tracker.head.x+1 && tracker.tail.y >= tracker.head.y-1 && tracker.tail.y <= tracker.head.y+1
 }
 
-func moveRight(tracker headTail, trail [][]byte, steps int) (headTail, [][]byte) {
-	destination := tracker.headX + steps
-	edge := len(trail[tracker.headY]) - 1
-	if destination > edge {
-		trail[tracker.headY] = append(trail[tracker.headY], make([]byte, destination-edge)...)
-	}
-
-	for i := tracker.headX + 1; i <= destination; i++ {
-		tracker.headX = i
+func moveRight(tracker headTail, trail map[point]bool, steps int) (headTail, map[point]bool) {
+	limit := tracker.head.x + steps
+	for i := tracker.head.x + 1; i <= limit; i++ {
+		tracker.head.x = i
 
 		if !tailInVicinity(tracker) {
-			tracker.tailY = tracker.headY
-			tracker.tailX = i - 1
-			trail[tracker.tailY][tracker.tailX] = '#'
+			tracker.tail.y = tracker.head.y
+			tracker.tail.x = i - 1
+			trail[tracker.tail] = true
 		}
 	}
 
 	return tracker, trail
 }
 
-func moveLeft(tracker headTail, trail [][]byte, steps int) (headTail, [][]byte) {
-	destination := tracker.headX - steps
-
-	if destination < 0 {
-		add := 0 - destination
-		destination = 0
-		tracker.headX = add
-		trail[tracker.headY] = append(make([]byte, add), trail[tracker.headY]...)
-	}
-
-	for i := tracker.headX - 1; i >= destination; i-- {
-		tracker.headX = i
+func moveLeft(tracker headTail, trail map[point]bool, steps int) (headTail, map[point]bool) {
+	limit := tracker.head.x - steps
+	for i := tracker.head.x - 1; i >= limit; i-- {
+		tracker.head.x = i
 
 		if !tailInVicinity(tracker) {
-			edge := len(trail[tracker.headY]) - 1
-			if edge < i+1 {
-				trail[tracker.headY] = append(trail[tracker.headY], make([]byte, i-edge+1)...)
-			}
-
-			tracker.tailY = tracker.headY
-			tracker.tailX = i + 1
-			trail[tracker.tailY][tracker.tailX] = '#'
+			tracker.tail.y = tracker.head.y
+			tracker.tail.x = i + 1
+			trail[tracker.tail] = true
 		}
 	}
 
 	return tracker, trail
 }
 
-func moveUp(tracker headTail, trail [][]byte, steps int) (headTail, [][]byte) {
-	destination := tracker.headY + steps
-
-	edge := len(trail) - 1
-	if destination > edge {
-		width := len(trail[tracker.headY])
-		for i := 0; i < destination-edge; i++ {
-			trail = append(trail, make([]byte, width))
-		}
-	}
-
-	for i := tracker.headY + 1; i <= destination; i++ {
-		tracker.headY = i
-
-		edge := len(trail[i]) - 1
-		if tracker.headX > edge {
-			trail[i] = append(trail[i], make([]byte, tracker.headX-edge)...)
-		}
+func moveUp(tracker headTail, trail map[point]bool, steps int) (headTail, map[point]bool) {
+	limit := tracker.head.y + steps
+	for i := tracker.head.y + 1; i <= limit; i++ {
+		tracker.head.y = i
 
 		if !tailInVicinity(tracker) {
-			tracker.tailX = tracker.headX
-			tracker.tailY = i - 1
-			trail[tracker.tailY][tracker.tailX] = '#'
+			tracker.tail.x = tracker.head.x
+			tracker.tail.y = i - 1
+			trail[tracker.tail] = true
 		}
 	}
 
 	return tracker, trail
 }
 
-func moveDown(tracker headTail, trail [][]byte, steps int) (headTail, [][]byte) {
-	destination := tracker.headY - steps
-	if destination < 0 {
-		add := 0 - destination
-		add++
-		destination = 0
-		tracker.headY = add
-		width := len(trail[tracker.headY])
-
-		var toPrepend [][]byte
-		for i := 0; i < add; i++ {
-			toPrepend = append(toPrepend, make([]byte, width))
-		}
-
-		trail = append(toPrepend, trail...)
-	}
-
-	for i := tracker.headY - 1; i >= destination; i-- {
-		tracker.headY = i
+func moveDown(tracker headTail, trail map[point]bool, steps int) (headTail, map[point]bool) {
+	limit := tracker.head.y - steps
+	for i := tracker.head.y - 1; i >= limit; i-- {
+		tracker.head.y = i
 
 		if !tailInVicinity(tracker) {
-			tracker.tailX = tracker.headX
-			tracker.tailY = i + 1
-
-			edge := len(trail[tracker.tailY]) - 1
-			if edge < tracker.tailX {
-				trail[tracker.tailY] = append(trail[tracker.tailY], make([]byte, tracker.tailX-edge)...)
-			}
-			trail[tracker.tailY][tracker.tailX] = '#'
+			tracker.tail.x = tracker.head.x
+			tracker.tail.y = i + 1
+			trail[tracker.tail] = true
 		}
 	}
 
 	return tracker, trail
 }
 
-func drawTail(tracker headTail, action move, trail [][]byte) (headTail, [][]byte) {
+func drawTail(tracker headTail, action move, trail map[point]bool) (headTail, map[point]bool) {
 	switch action.direction {
 	case 'R':
 		return moveRight(tracker, trail, action.steps)
@@ -170,28 +123,16 @@ func drawTail(tracker headTail, action move, trail [][]byte) (headTail, [][]byte
 	return tracker, trail
 }
 
-func calculate(trail [][]byte) int {
-	count := 0
-	for i := range trail {
-		for j := range trail[i] {
-			if trail[i][j] == '#' {
-				count++
-			}
-		}
-	}
-
-	return count
-}
-
 func part1(moves []move) int {
-	trail := [][]byte{[]byte{'#'}}
 	var tracker headTail
+	trail := make(map[point]bool)
+	trail[tracker.tail] = true
 
 	for i := range moves {
 		tracker, trail = drawTail(tracker, moves[i], trail)
 	}
 
-	return calculate(trail)
+	return len(trail)
 }
 
 func main() {
