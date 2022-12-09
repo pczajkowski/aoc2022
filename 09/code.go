@@ -41,7 +41,7 @@ type point struct {
 
 type headTail struct {
 	head point
-	tail point
+	tail *point
 }
 
 func tailInVicinity(tracker headTail) bool {
@@ -56,7 +56,7 @@ func moveRight(tracker headTail, trail map[point]bool, steps int) (headTail, map
 		if !tailInVicinity(tracker) {
 			tracker.tail.y = tracker.head.y
 			tracker.tail.x = i - 1
-			trail[tracker.tail] = true
+			trail[*tracker.tail] = true
 		}
 	}
 
@@ -71,7 +71,7 @@ func moveLeft(tracker headTail, trail map[point]bool, steps int) (headTail, map[
 		if !tailInVicinity(tracker) {
 			tracker.tail.y = tracker.head.y
 			tracker.tail.x = i + 1
-			trail[tracker.tail] = true
+			trail[*tracker.tail] = true
 		}
 	}
 
@@ -86,7 +86,7 @@ func moveUp(tracker headTail, trail map[point]bool, steps int) (headTail, map[po
 		if !tailInVicinity(tracker) {
 			tracker.tail.x = tracker.head.x
 			tracker.tail.y = i - 1
-			trail[tracker.tail] = true
+			trail[*tracker.tail] = true
 		}
 	}
 
@@ -101,7 +101,7 @@ func moveDown(tracker headTail, trail map[point]bool, steps int) (headTail, map[
 		if !tailInVicinity(tracker) {
 			tracker.tail.x = tracker.head.x
 			tracker.tail.y = i + 1
-			trail[tracker.tail] = true
+			trail[*tracker.tail] = true
 		}
 	}
 
@@ -124,9 +124,9 @@ func drawTail(tracker headTail, action move, trail map[point]bool) (headTail, ma
 }
 
 func part1(moves []move) int {
-	var tracker headTail
+	tracker := headTail{tail: &point{}}
 	trail := make(map[point]bool)
-	trail[tracker.tail] = true
+	trail[*tracker.tail] = true
 
 	for i := range moves {
 		tracker, trail = drawTail(tracker, moves[i], trail)
