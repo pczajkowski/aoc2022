@@ -50,8 +50,20 @@ func moveRight(x int, y int, trail [][]byte, steps int) (int, int, [][]byte) {
 
 func moveLeft(x int, y int, trail [][]byte, steps int) (int, int, [][]byte) {
 	x -= steps
-	for i := x + 1; i < x+steps; i++ {
-		trail[y][i] = '#'
+
+	if x < 0 {
+		add := 0 - x
+		x = 0
+		trail[y] = append(make([]byte, add), trail[y]...)
+	}
+
+	for i := 1; i < steps; i++ {
+		edge := len(trail[y]) - 1
+		if edge < x+i {
+			trail[y] = append(trail[y], make([]byte, x+i-edge)...)
+		}
+
+		trail[y][x+i] = '#'
 	}
 
 	return x, y, trail
@@ -69,6 +81,11 @@ func moveUp(x int, y int, trail [][]byte, steps int) (int, int, [][]byte) {
 	}
 
 	for i := y - steps + 1; i < y; i++ {
+		edge := len(trail[i]) - 1
+		if x > edge {
+			trail[i] = append(trail[i], make([]byte, x-edge)...)
+		}
+
 		trail[i][x] = '#'
 	}
 
@@ -78,8 +95,25 @@ func moveUp(x int, y int, trail [][]byte, steps int) (int, int, [][]byte) {
 func moveDown(x int, y int, trail [][]byte, steps int) (int, int, [][]byte) {
 	y -= steps
 
-	for i := y - 1; i > y-steps; i-- {
-		trail[i][x] = '#'
+	if y < 0 {
+		add := 0 - y
+		y = 0
+		width := len(trail[y])
+
+		var toPrepend [][]byte
+		for i := 0; i < add; i++ {
+			toPrepend = append(toPrepend, make([]byte, width))
+		}
+
+		trail = append(toPrepend, trail...)
+	}
+
+	for i := 1; i < steps; i++ {
+		edge := len(trail[y+i]) - 1
+		if edge < x {
+			trail[y+i] = append(trail[y+i], make([]byte, x-edge)...)
+		}
+		trail[y+i][x] = '#'
 	}
 
 	return x, y, trail
