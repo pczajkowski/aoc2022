@@ -34,6 +34,98 @@ func readInput(file *os.File) []move {
 	return moves
 }
 
+func moveRight(x int, y int, trail [][]byte, steps int) (int, int, [][]byte) {
+	x += steps
+	edge := len(trail[y]) - 1
+	if x > edge {
+		trail[y] = append(trail[y], make([]byte, x-edge)...)
+	}
+
+	for i := x - 1; i > x-steps; i-- {
+		trail[y][i] = '#'
+	}
+
+	return x, y, trail
+}
+
+func moveLeft(x int, y int, trail [][]byte, steps int) (int, int, [][]byte) {
+	x -= steps
+	for i := x + 1; i < x+steps; i++ {
+		trail[y][i] = '#'
+	}
+
+	return x, y, trail
+}
+
+func moveUp(x int, y int, trail [][]byte, steps int) (int, int, [][]byte) {
+	width := len(trail[y])
+	y += steps
+	edge := len(trail) - 1
+
+	if y > edge {
+		for i := 0; i < y-edge; i++ {
+			trail = append(trail, make([]byte, width))
+		}
+	}
+
+	for i := y - steps + 1; i < y; i++ {
+		trail[i][x] = '#'
+	}
+
+	return x, y, trail
+}
+
+func moveDown(x int, y int, trail [][]byte, steps int) (int, int, [][]byte) {
+	y -= steps
+
+	for i := y - 1; i > y-steps; i-- {
+		trail[i][x] = '#'
+	}
+
+	return x, y, trail
+}
+
+func drawTail(x int, y int, action move, trail [][]byte) (int, int, [][]byte) {
+	switch action.direction {
+	case 'R':
+		return moveRight(x, y, trail, action.steps)
+	case 'L':
+		return moveLeft(x, y, trail, action.steps)
+	case 'U':
+		return moveUp(x, y, trail, action.steps)
+	case 'D':
+		return moveDown(x, y, trail, action.steps)
+	}
+
+	return x, y, trail
+}
+
+func calculate(trail [][]byte) int {
+	count := 0
+	for i := range trail {
+		for j := range trail[i] {
+			if trail[i][j] == '#' {
+				count++
+			}
+		}
+	}
+
+	return count
+}
+
+func part1(moves []move) int {
+	trail := [][]byte{make([]byte, 1)}
+
+	x := 0
+	y := 0
+
+	for i := range moves {
+		x, y, trail = drawTail(x, y, moves[i], trail)
+	}
+
+	return calculate(trail)
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -47,5 +139,5 @@ func main() {
 	}
 
 	moves := readInput(file)
-	fmt.Println(moves)
+	fmt.Println("Part1:", part1(moves))
 }
