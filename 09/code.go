@@ -127,10 +127,9 @@ func wayOfTail(moves []move, snake []point) int {
 					snake[j] = drawTail(&snake[j-1], snake[j], moves[i])
 				}
 
-				if j == last {
-					trail[snake[j]] = true
-				}
 			}
+
+			trail[snake[last]] = true
 		}
 	}
 
