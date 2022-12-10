@@ -47,11 +47,26 @@ func tailInVicinity(leader *point, tail point) bool {
 	return tail.x >= leader.x-1 && tail.x <= leader.x+1 && tail.y >= leader.y-1 && tail.y <= leader.y+1
 }
 
+func catchUp(leader *point, tail point) point {
+	if tail.x > leader.x {
+		tail.x--
+	} else if tail.x < leader.x {
+		tail.x++
+	}
+
+	if tail.y > leader.y {
+		tail.y--
+	} else if tail.y < leader.y {
+		tail.y++
+	}
+
+	return tail
+}
+
 func moveRight(leader *point, tail point) point {
 	if !tailInVicinity(leader, tail) {
 		if leader != nil {
-			tail.y = leader.y
-			tail.x = leader.x - 1
+			tail = catchUp(leader, tail)
 		} else {
 			tail.x++
 		}
@@ -63,8 +78,7 @@ func moveRight(leader *point, tail point) point {
 func moveLeft(leader *point, tail point) point {
 	if !tailInVicinity(leader, tail) {
 		if leader != nil {
-			tail.y = leader.y
-			tail.x = leader.x + 1
+			tail = catchUp(leader, tail)
 		} else {
 			tail.x--
 		}
@@ -76,8 +90,7 @@ func moveLeft(leader *point, tail point) point {
 func moveUp(leader *point, tail point) point {
 	if !tailInVicinity(leader, tail) {
 		if leader != nil {
-			tail.x = leader.x
-			tail.y = leader.y - 1
+			tail = catchUp(leader, tail)
 		} else {
 			tail.y++
 		}
@@ -89,8 +102,7 @@ func moveUp(leader *point, tail point) point {
 func moveDown(leader *point, tail point) point {
 	if !tailInVicinity(leader, tail) {
 		if leader != nil {
-			tail.x = leader.x
-			tail.y = leader.y + 1
+			tail = catchUp(leader, tail)
 		} else {
 			tail.y--
 		}
