@@ -114,26 +114,23 @@ func drawTail(leader *point, tail point, action move) point {
 	return tail
 }
 
-func part1(moves []move) int {
-	parts := make([]point, 2)
-
+func wayOfTail(moves []move, snake []point) int {
 	trail := make(map[point]bool)
-	last := len(parts) - 1
+	last := len(snake) - 1
 
 	for i := range moves {
 		for s := 0; s < moves[i].steps; s++ {
-			for j := range parts {
+			for j := range snake {
 				if j == 0 {
-					parts[j] = drawTail(nil, parts[j], moves[i])
+					snake[j] = drawTail(nil, snake[j], moves[i])
 				} else {
-					parts[j] = drawTail(&parts[j-1], parts[j], moves[i])
+					snake[j] = drawTail(&snake[j-1], snake[j], moves[i])
 				}
 
 				if j == last {
-					trail[parts[j]] = true
+					trail[snake[j]] = true
 				}
 			}
-			fmt.Println(parts)
 		}
 	}
 
@@ -153,5 +150,9 @@ func main() {
 	}
 
 	moves := readInput(file)
-	fmt.Println("Part1:", part1(moves))
+	snake1 := make([]point, 2)
+	fmt.Println("Part1:", wayOfTail(moves, snake1))
+
+	snake2 := make([]point, 10)
+	fmt.Println("Part2:", wayOfTail(moves, snake2))
 }
