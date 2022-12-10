@@ -46,6 +46,34 @@ func readInput(file *os.File) []command {
 	return commands
 }
 
+func part1(commands []command) int {
+	cycles := 0
+	currentLimit := 20
+	absoluteLimit := 221
+	result := 0
+	x := 1
+
+	for i := range commands {
+		if cycles > absoluteLimit {
+			break
+		}
+
+		if commands[i].instruction == noop {
+			cycles++
+		} else {
+			cycles += 2
+			if cycles >= currentLimit {
+				result += currentLimit * x
+				currentLimit += 40
+			}
+
+			x += commands[i].value
+		}
+	}
+
+	return result
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -59,5 +87,5 @@ func main() {
 	}
 
 	commands := readInput(file)
-	fmt.Println(commands)
+	fmt.Println("Part1:", part1(commands))
 }
