@@ -39,97 +39,102 @@ type point struct {
 	y int
 }
 
-type headTail struct {
-	head point
-	tail *point
+func tailInVicinity(leader *point, tail point) bool {
+	if leader == nil {
+		return false
+	}
+
+	return tail.x >= leader.x-1 && tail.x <= leader.x+1 && tail.y >= leader.y-1 && tail.y <= leader.y+1
 }
 
-func tailInVicinity(tracker headTail) bool {
-	return tracker.tail.x >= tracker.head.x-1 && tracker.tail.x <= tracker.head.x+1 && tracker.tail.y >= tracker.head.y-1 && tracker.tail.y <= tracker.head.y+1
-}
-
-func moveRight(tracker headTail, trail map[point]bool, steps int) (headTail, map[point]bool) {
-	limit := tracker.head.x + steps
-	for i := tracker.head.x + 1; i <= limit; i++ {
-		tracker.head.x = i
-
-		if !tailInVicinity(tracker) {
-			tracker.tail.y = tracker.head.y
-			tracker.tail.x = i - 1
-			trail[*tracker.tail] = true
+func moveRight(leader *point, tail point) point {
+	if !tailInVicinity(leader, tail) {
+		if leader != nil {
+			tail.y = leader.y
+			tail.x = leader.x - 1
+		} else {
+			tail.x++
 		}
 	}
 
-	return tracker, trail
+	return tail
 }
 
-func moveLeft(tracker headTail, trail map[point]bool, steps int) (headTail, map[point]bool) {
-	limit := tracker.head.x - steps
-	for i := tracker.head.x - 1; i >= limit; i-- {
-		tracker.head.x = i
-
-		if !tailInVicinity(tracker) {
-			tracker.tail.y = tracker.head.y
-			tracker.tail.x = i + 1
-			trail[*tracker.tail] = true
+func moveLeft(leader *point, tail point) point {
+	if !tailInVicinity(leader, tail) {
+		if leader != nil {
+			tail.y = leader.y
+			tail.x = leader.x + 1
+		} else {
+			tail.x--
 		}
 	}
 
-	return tracker, trail
+	return tail
 }
 
-func moveUp(tracker headTail, trail map[point]bool, steps int) (headTail, map[point]bool) {
-	limit := tracker.head.y + steps
-	for i := tracker.head.y + 1; i <= limit; i++ {
-		tracker.head.y = i
-
-		if !tailInVicinity(tracker) {
-			tracker.tail.x = tracker.head.x
-			tracker.tail.y = i - 1
-			trail[*tracker.tail] = true
+func moveUp(leader *point, tail point) point {
+	if !tailInVicinity(leader, tail) {
+		if leader != nil {
+			tail.x = leader.x
+			tail.y = leader.y - 1
+		} else {
+			tail.y++
 		}
 	}
 
-	return tracker, trail
+	return tail
 }
 
-func moveDown(tracker headTail, trail map[point]bool, steps int) (headTail, map[point]bool) {
-	limit := tracker.head.y - steps
-	for i := tracker.head.y - 1; i >= limit; i-- {
-		tracker.head.y = i
-
-		if !tailInVicinity(tracker) {
-			tracker.tail.x = tracker.head.x
-			tracker.tail.y = i + 1
-			trail[*tracker.tail] = true
+func moveDown(leader *point, tail point) point {
+	if !tailInVicinity(leader, tail) {
+		if leader != nil {
+			tail.x = leader.x
+			tail.y = leader.y + 1
+		} else {
+			tail.y--
 		}
 	}
 
-	return tracker, trail
+	return tail
 }
 
-func drawTail(tracker headTail, action move, trail map[point]bool) (headTail, map[point]bool) {
+func drawTail(leader *point, tail point, action move) point {
 	switch action.direction {
 	case 'R':
-		return moveRight(tracker, trail, action.steps)
+		return moveRight(leader, tail)
 	case 'L':
-		return moveLeft(tracker, trail, action.steps)
+		return moveLeft(leader, tail)
 	case 'U':
-		return moveUp(tracker, trail, action.steps)
+		return moveUp(leader, tail)
 	case 'D':
-		return moveDown(tracker, trail, action.steps)
+		return moveDown(leader, tail)
 	}
 
-	return tracker, trail
+	return tail
 }
 
 func part1(moves []move) int {
-	tracker := headTail{tail: &point{}}
+	parts := make([]point, 2)
+
 	trail := make(map[point]bool)
-	trail[*tracker.tail] = true
+	last := len(parts) - 1
 
 	for i := range moves {
-		tracker, trail = drawTail(tracker, moves[i], trail)
+		for s := 0; s < moves[i].steps; s++ {
+			for j := range parts {
+				if j == 0 {
+					parts[j] = drawTail(nil, parts[j], moves[i])
+				} else {
+					parts[j] = drawTail(&parts[j-1], parts[j], moves[i])
+				}
+
+				if j == last {
+					trail[parts[j]] = true
+				}
+			}
+			fmt.Println(parts)
+		}
 	}
 
 	return len(trail)
