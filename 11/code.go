@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -155,10 +154,11 @@ func performOperation(mon monkey, itemIndex int) int {
 	return result
 }
 
-func processMonkey(index int, monkeys []monkey) []monkey {
+func processMonkey(index int, monkeys []monkey, relief int) []monkey {
 	for i := range monkeys[index].items {
 		worryLevel := performOperation(monkeys[index], i)
-		worryLevel /= 3
+		worryLevel /= relief
+
 		if worryLevel%monkeys[index].test == 0 {
 			monkeys[monkeys[index].iftrue].items = append(monkeys[monkeys[index].iftrue].items, worryLevel)
 		} else {
@@ -172,15 +172,24 @@ func processMonkey(index int, monkeys []monkey) []monkey {
 	return monkeys
 }
 
-func part1(monkeys []monkey) int {
-	for i := 0; i < 20; i++ {
+func process(monkeys []monkey, rounds int, relief int) int {
+	for i := 0; i < rounds; i++ {
 		for m := range monkeys {
-			monkeys = processMonkey(m, monkeys)
+			monkeys = processMonkey(m, monkeys, relief)
 		}
 	}
 
-	sort.Slice(monkeys, func(i, j int) bool { return monkeys[i].counter > monkeys[j].counter })
-	return monkeys[0].counter * monkeys[1].counter
+	first := 0
+	second := 0
+	for i := range monkeys {
+		if monkeys[i].counter > first {
+			second = first
+			first = monkeys[i].counter
+		}
+	}
+
+	fmt.Println(first, second)
+	return first * second
 }
 
 func main() {
@@ -196,5 +205,11 @@ func main() {
 	}
 
 	monkeys := readInput(file)
-	fmt.Println("Part1:", part1(monkeys))
+	originalMonkeys := make([]monkey, len(monkeys))
+	for i := range monkeys {
+		originalMonkeys[i] = monkeys[i]
+	}
+
+	fmt.Println("Part1:", process(monkeys, 20, 3))
+	fmt.Println("Part2:", process(originalMonkeys, 1000, 1))
 }
