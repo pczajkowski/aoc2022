@@ -28,8 +28,11 @@ type operation struct {
 }
 
 type monkey struct {
-	items []int
-	op    operation
+	items   []int
+	op      operation
+	test    int
+	iftrue  int
+	iffalse int
 }
 
 func readItems(line string) []int {
@@ -40,7 +43,7 @@ func readItems(line string) []int {
 	for i := range parts {
 		n, err := strconv.Atoi(parts[i])
 		if err != nil {
-			log.Fatal("Can't pasrse", parts[i], err)
+			log.Fatal("Can't parse", parts[i], err)
 		}
 
 		result = append(result, n)
@@ -57,7 +60,7 @@ func readVariable(text string) variable {
 		result.t = val
 		n, err := strconv.Atoi(text)
 		if err != nil {
-			log.Fatal("Can't pasrse", text, err)
+			log.Fatal("Can't parse", text, err)
 		}
 
 		result.val = n
@@ -77,6 +80,16 @@ func readOperation(line string) operation {
 	result.x = readVariable(parts[0])
 	result.y = readVariable(parts[2])
 	result.action = parts[1][0]
+
+	return result
+}
+
+func readInt(line string, format string) int {
+	var result int
+	n, err := fmt.Sscanf(line, format, &result)
+	if n != 1 || err != nil {
+		log.Fatal("Can't parse", line, err)
+	}
 
 	return result
 }
@@ -101,6 +114,12 @@ func readInput(file *os.File) []monkey {
 			currentMonkey.items = readItems(line)
 		case 2:
 			currentMonkey.op = readOperation(line)
+		case 3:
+			currentMonkey.test = readInt(line, "  Test: divisible by %d")
+		case 4:
+			currentMonkey.iftrue = readInt(line, "    If true: throw to monkey %d")
+		case 5:
+			currentMonkey.iffalse = readInt(line, "    If false: throw to monkey %d")
 		}
 		counter++
 	}
