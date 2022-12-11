@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -146,9 +147,17 @@ func performOperation(mon monkey, itemIndex int) int {
 
 	var result int
 	if mon.op.action == '+' {
-		result = x + y
+		if x > math.MaxInt-y {
+			result = mon.items[itemIndex]
+		} else {
+			result = x + y
+		}
 	} else {
-		result = x * y
+		if x > math.MaxInt/y {
+			result = mon.items[itemIndex]
+		} else {
+			result = x * y
+		}
 	}
 
 	return result
@@ -212,4 +221,5 @@ func main() {
 
 	fmt.Println("Part1:", process(monkeys, 20, 3))
 	fmt.Println("Part2:", process(originalMonkeys, 1000, 1))
+	fmt.Println(originalMonkeys)
 }
