@@ -128,6 +128,57 @@ func readInput(file *os.File) []monkey {
 	return monkeys
 }
 
+func performOperation(mon monkey, itemIndex int) int {
+	var x int
+	if mon.op.x.t == old {
+		x = mon.items[itemIndex]
+	} else {
+		x = mon.op.x.val
+	}
+
+	var y int
+	if mon.op.y.t == old {
+		y = mon.items[itemIndex]
+	} else {
+		y = mon.op.y.val
+	}
+
+	var result int
+	if mon.op.action == '+' {
+		result = x + y
+	} else {
+		result = x * y
+	}
+
+	return result
+}
+
+func processMonkey(index int, monkeys []monkey) []monkey {
+	for i := range monkeys[index].items {
+		worryLevel := performOperation(monkeys[index], i)
+		worryLevel /= 3
+		if worryLevel%monkeys[index].test == 0 {
+			monkeys[monkeys[index].iftrue].items = append(monkeys[monkeys[index].iftrue].items, worryLevel)
+		} else {
+			monkeys[monkeys[index].iffalse].items = append(monkeys[monkeys[index].iffalse].items, worryLevel)
+		}
+	}
+
+	monkeys[index].items = []int{}
+	return monkeys
+}
+
+func part1(monkeys []monkey) int {
+	for i := 0; i < 20; i++ {
+		for m := range monkeys {
+			monkeys = processMonkey(m, monkeys)
+		}
+	}
+
+	fmt.Println(monkeys)
+	return 0
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -141,5 +192,5 @@ func main() {
 	}
 
 	monkeys := readInput(file)
-	fmt.Println(monkeys)
+	part1(monkeys)
 }
