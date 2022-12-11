@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -33,6 +34,7 @@ type monkey struct {
 	test    int
 	iftrue  int
 	iffalse int
+	counter int
 }
 
 func readItems(line string) []int {
@@ -162,6 +164,8 @@ func processMonkey(index int, monkeys []monkey) []monkey {
 		} else {
 			monkeys[monkeys[index].iffalse].items = append(monkeys[monkeys[index].iffalse].items, worryLevel)
 		}
+
+		monkeys[index].counter++
 	}
 
 	monkeys[index].items = []int{}
@@ -175,8 +179,8 @@ func part1(monkeys []monkey) int {
 		}
 	}
 
-	fmt.Println(monkeys)
-	return 0
+	sort.Slice(monkeys, func(i, j int) bool { return monkeys[i].counter > monkeys[j].counter })
+	return monkeys[0].counter * monkeys[1].counter
 }
 
 func main() {
@@ -192,5 +196,5 @@ func main() {
 	}
 
 	monkeys := readInput(file)
-	part1(monkeys)
+	fmt.Println("Part1:", part1(monkeys))
 }
