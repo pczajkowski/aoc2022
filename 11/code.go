@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"log"
-	"math"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -145,28 +145,16 @@ func performOperation(mon monkey, itemIndex int) int {
 		y = mon.op.y.val
 	}
 
-	var result int
 	if mon.op.action == '+' {
-		if x > math.MaxInt-y {
-			result = mon.items[itemIndex]
-		} else {
-			result = x + y
-		}
-	} else {
-		if x > math.MaxInt/y {
-			result = mon.items[itemIndex]
-		} else {
-			result = x * y
-		}
+		return x + y
 	}
 
-	return result
+	return x * y
 }
 
-func processMonkey(index int, monkeys []monkey, relief int) []monkey {
+func processMonkey(index int, monkeys []monkey, relief int, divider int) []monkey {
 	for i := range monkeys[index].items {
-		worryLevel := performOperation(monkeys[index], i)
-		worryLevel /= relief
+		worryLevel := performOperation(monkeys[index], i) / relief % divider
 
 		if worryLevel%monkeys[index].test == 0 {
 			monkeys[monkeys[index].iftrue].items = append(monkeys[monkeys[index].iftrue].items, worryLevel)
@@ -181,24 +169,15 @@ func processMonkey(index int, monkeys []monkey, relief int) []monkey {
 	return monkeys
 }
 
-func process(monkeys []monkey, rounds int, relief int) int {
+func process(monkeys []monkey, rounds int, relief int, divider int) int {
 	for i := 0; i < rounds; i++ {
 		for m := range monkeys {
-			monkeys = processMonkey(m, monkeys, relief)
+			monkeys = processMonkey(m, monkeys, relief, divider)
 		}
 	}
 
-	first := 0
-	second := 0
-	for i := range monkeys {
-		if monkeys[i].counter > first {
-			second = first
-			first = monkeys[i].counter
-		}
-	}
-
-	fmt.Println(first, second)
-	return first * second
+	sort.Slice(monkeys, func(i, j int) bool { return monkeys[i].counter > monkeys[j].counter })
+	return monkeys[0].counter * monkeys[1].counter
 }
 
 func main() {
@@ -219,7 +198,11 @@ func main() {
 		originalMonkeys[i] = monkeys[i]
 	}
 
-	fmt.Println("Part1:", process(monkeys, 20, 3))
-	fmt.Println("Part2:", process(originalMonkeys, 1000, 1))
-	fmt.Println(originalMonkeys)
+	divider := 1
+	for i := range monkeys {
+		divider *= monkeys[i].test
+	}
+
+	fmt.Println("Part1:", process(monkeys, 20, 3, divider))
+	fmt.Println("Part2:", process(originalMonkeys, 10000, 1, divider))
 }
