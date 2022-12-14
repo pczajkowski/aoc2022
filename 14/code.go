@@ -153,7 +153,7 @@ func fall(unit point, rocks map[point]bool, edges [2]point) bool {
 
 		}
 
-		if current.y > edges[0].y && current.x < edges[0].x || current.x > edges[1].x {
+		if current.y > edges[0].y {
 			return true
 		}
 
