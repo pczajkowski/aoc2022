@@ -75,7 +75,6 @@ func drawHorizontal(first point, second point, rocks map[point]bool) {
 	}
 
 	for i := start + 1; i < end; i++ {
-		fmt.Println("h", first, second, i)
 		rocks[point{i, first.y}] = true
 	}
 }
@@ -89,7 +88,6 @@ func drawVertical(first point, second point, rocks map[point]bool) {
 	}
 
 	for i := start + 1; i < end; i++ {
-		fmt.Println("v", first, second, i)
 		rocks[point{first.x, i}] = true
 	}
 }
@@ -102,28 +100,86 @@ func drawPath(first point, second point, rocks map[point]bool) {
 	}
 }
 
-func buildRocks(points [][]point) map[point]bool {
+func buildRocks(points [][]point) (map[point]bool, [2]point) {
 	rocks := make(map[point]bool)
-	leftEdge := point{500, 0}
-	rightEdge := point{500, 0}
+	var edges [2]point
+	edges[0] = point{500, 0}
+	edges[1] = point{500, 0}
 
 	for i := range points {
 		edge := len(points[i])
 		prev := points[i][0]
 		rocks[prev] = true
-		leftEdge, rightEdge = adjustEdges(leftEdge, rightEdge, prev)
+		edges[0], edges[1] = adjustEdges(edges[0], edges[1], prev)
 
 		for j := 1; j < edge; j++ {
 			current := points[i][j]
 			rocks[current] = true
-			leftEdge, rightEdge = adjustEdges(leftEdge, rightEdge, current)
+			edges[0], edges[1] = adjustEdges(edges[0], edges[1], current)
 
 			drawPath(prev, current, rocks)
 			prev = current
 		}
 	}
 
-	return rocks
+	return rocks, edges
+}
+
+func moveUnit(unit point, rocks map[point]bool) point {
+	current := point{unit.x, unit.y + 1}
+	if !rocks[current] {
+		return current
+	}
+
+	current.x--
+	if !rocks[current] {
+		return current
+	}
+
+	current.x += 2
+	if !rocks[current] {
+		return current
+	}
+
+	return unit
+}
+
+func fall(unit point, rocks map[point]bool, edges [2]point) bool {
+	for {
+		current := moveUnit(unit, rocks)
+		if current.x == unit.x && current.y == unit.y {
+			rocks[current] = true
+			break
+
+		}
+
+		if current.y > edges[0].y && current.x < edges[0].x || current.x > edges[1].x {
+			return true
+		}
+
+		unit = current
+	}
+
+	return false
+}
+
+func sandstorm(rocks map[point]bool, edges [2]point) int {
+	initialRocks := len(rocks)
+	currentRocks := initialRocks
+
+	for {
+		if fall(point{500, 0}, rocks, edges) {
+			break
+		}
+
+		if len(rocks) == currentRocks {
+			break
+		}
+
+		currentRocks = len(rocks)
+	}
+
+	return len(rocks) - initialRocks
 }
 
 func main() {
@@ -139,6 +195,6 @@ func main() {
 	}
 
 	points := readInput(file)
-	rocks := buildRocks(points)
-	fmt.Println(rocks)
+	rocks, edges := buildRocks(points)
+	fmt.Println("Part1:", sandstorm(rocks, edges))
 }
