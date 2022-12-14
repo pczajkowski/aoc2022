@@ -49,6 +49,83 @@ func readInput(file *os.File) [][]point {
 	return points
 }
 
+func adjustEdges(left point, right point, current point) (point, point) {
+	if left.x > current.x {
+		left.x = current.x
+	}
+
+	if left.y < current.y {
+		left.y = current.y
+		right.y = current.y
+	}
+
+	if right.x < current.x {
+		right.x = current.x
+	}
+
+	return left, right
+}
+
+func drawHorizontal(first point, second point, rocks map[point]bool) {
+	start := first.x
+	end := second.x
+	if start > second.x {
+		start = second.x
+		end = first.x
+	}
+
+	for i := start + 1; i < end; i++ {
+		fmt.Println("h", first, second, i)
+		rocks[point{i, first.y}] = true
+	}
+}
+
+func drawVertical(first point, second point, rocks map[point]bool) {
+	start := first.y
+	end := second.y
+	if start > second.y {
+		start = second.y
+		end = first.y
+	}
+
+	for i := start + 1; i < end; i++ {
+		fmt.Println("v", first, second, i)
+		rocks[point{first.x, i}] = true
+	}
+}
+
+func drawPath(first point, second point, rocks map[point]bool) {
+	if first.x == second.x {
+		drawVertical(first, second, rocks)
+	} else {
+		drawHorizontal(first, second, rocks)
+	}
+}
+
+func buildRocks(points [][]point) map[point]bool {
+	rocks := make(map[point]bool)
+	leftEdge := point{500, 0}
+	rightEdge := point{500, 0}
+
+	for i := range points {
+		edge := len(points[i])
+		prev := points[i][0]
+		rocks[prev] = true
+		leftEdge, rightEdge = adjustEdges(leftEdge, rightEdge, prev)
+
+		for j := 1; j < edge; j++ {
+			current := points[i][j]
+			rocks[current] = true
+			leftEdge, rightEdge = adjustEdges(leftEdge, rightEdge, current)
+
+			drawPath(prev, current, rocks)
+			prev = current
+		}
+	}
+
+	return rocks
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -62,5 +139,6 @@ func main() {
 	}
 
 	points := readInput(file)
-	fmt.Println(points)
+	rocks := buildRocks(points)
+	fmt.Println(rocks)
 }
