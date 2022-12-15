@@ -55,7 +55,10 @@ func markOccupied(sensor point, distance int, occupied map[int]map[int]byte) {
 		}
 
 		for j := sensor.x - width; j <= sensor.x+width; j++ {
-			occupied[i][j] = '#'
+			_, ok := occupied[i][j]
+			if !ok {
+				occupied[i][j] = '#'
+			}
 		}
 		width--
 	}
@@ -95,6 +98,17 @@ func drawLines(points [][2]point) map[int]map[int]byte {
 	return occupied
 }
 
+func part1(occupied map[int]map[int]byte, row int) int {
+	count := 0
+	for _, value := range occupied[row] {
+		if value == '#' {
+			count++
+		}
+	}
+
+	return count
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -108,5 +122,6 @@ func main() {
 	}
 
 	points := readInput(file)
-	fmt.Println(drawLines(points))
+	occupied := drawLines(points)
+	fmt.Println("Part1:", part1(occupied, 2000000))
 }
