@@ -45,39 +45,21 @@ func getDistance(sensor point, beacon point) int {
 	return abs(sensor.x-beacon.x) + abs(sensor.y-beacon.y)
 }
 
-func markOccupied(sensor point, distance int, occupied map[int]map[int]byte) {
-	end := sensor.y - distance
-
-	width := distance
-	for i := sensor.y; i >= end; i-- {
-		if occupied[i] == nil {
-			occupied[i] = make(map[int]byte)
-		}
-
-		for j := sensor.x - width; j <= sensor.x+width; j++ {
-			_, ok := occupied[i][j]
-			if !ok {
-				occupied[i][j] = '#'
-			}
-		}
-		width--
+func markOccupied(sensor point, distance int, occupied map[int]map[int]byte, row int) {
+	width := distance - abs(row-sensor.y)
+	if occupied[row] == nil {
+		occupied[row] = make(map[int]byte)
 	}
 
-	width = distance - 1
-	end = sensor.y + distance
-	for i := sensor.y + 1; i <= end; i++ {
-		if occupied[i] == nil {
-			occupied[i] = make(map[int]byte)
+	for j := sensor.x - width; j <= sensor.x+width; j++ {
+		_, ok := occupied[row][j]
+		if !ok {
+			occupied[row][j] = '#'
 		}
-
-		for j := sensor.x - width; j <= sensor.x+width; j++ {
-			occupied[i][j] = '#'
-		}
-		width--
 	}
 }
 
-func drawLines(points [][2]point) map[int]map[int]byte {
+func drawLines(points [][2]point, row int) map[int]map[int]byte {
 	occupied := make(map[int]map[int]byte)
 	for i := range points {
 		if occupied[points[i][0].y] == nil {
@@ -91,7 +73,7 @@ func drawLines(points [][2]point) map[int]map[int]byte {
 		occupied[points[i][1].y][points[i][1].x] = 'b'
 
 		distance := getDistance(points[i][0], points[i][1])
-		markOccupied(points[i][0], distance, occupied)
+		markOccupied(points[i][0], distance, occupied, row)
 	}
 
 	return occupied
@@ -111,7 +93,7 @@ func filterPoints(points [][2]point, row int) [][2]point {
 
 func part1(points [][2]point, row int) int {
 	filtered := filterPoints(points, row)
-	occupied := drawLines(filtered)
+	occupied := drawLines(filtered, row)
 	count := 0
 	for _, value := range occupied[row] {
 		if value == '#' {
@@ -135,5 +117,5 @@ func main() {
 	}
 
 	points := readInput(file)
-	fmt.Println("Part1:", part1(points, 10))
+	fmt.Println("Part1:", part1(points, 2000000))
 }
