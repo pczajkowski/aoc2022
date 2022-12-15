@@ -33,6 +33,68 @@ func readInput(file *os.File) [][2]point {
 	return points
 }
 
+func abs(x int) int {
+	if x < 0 {
+		return 0 - x
+	}
+
+	return x
+}
+
+func getDistance(sensor point, beacon point) int {
+	return abs(sensor.x-beacon.x) + abs(sensor.y-beacon.y)
+}
+
+func markOccupied(sensor point, distance int, occupied map[int]map[int]byte) {
+	end := sensor.y - distance
+
+	width := distance
+	for i := sensor.y; i >= end; i-- {
+		if occupied[i] == nil {
+			occupied[i] = make(map[int]byte)
+		}
+
+		for j := sensor.x - width; j <= sensor.x+width; j++ {
+			occupied[i][j] = '#'
+		}
+		width--
+	}
+
+	width = distance - 1
+	end = sensor.y + distance
+	for i := sensor.y + 1; i <= end; i++ {
+		if occupied[i] == nil {
+			occupied[i] = make(map[int]byte)
+		}
+
+		for j := sensor.x - width; j <= sensor.x+width; j++ {
+			occupied[i][j] = '#'
+		}
+		width--
+	}
+}
+
+func drawLines(points [][2]point) map[int]map[int]byte {
+	occupied := make(map[int]map[int]byte)
+
+	for i := range points {
+		if occupied[points[i][0].y] == nil {
+			occupied[points[i][0].y] = make(map[int]byte)
+		}
+		occupied[points[i][0].y][points[i][0].x] = 's'
+
+		if occupied[points[i][1].y] == nil {
+			occupied[points[i][1].y] = make(map[int]byte)
+		}
+		occupied[points[i][1].y][points[i][1].x] = 'b'
+
+		distance := getDistance(points[i][0], points[i][1])
+		markOccupied(points[i][0], distance, occupied)
+	}
+
+	return occupied
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -46,5 +108,5 @@ func main() {
 	}
 
 	points := readInput(file)
-	fmt.Println(points)
+	fmt.Println(drawLines(points))
 }
