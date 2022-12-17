@@ -14,6 +14,7 @@ type valve struct {
 	rate        int
 	open        bool
 	connections []string
+	paths       []vertex
 }
 
 type vertex struct {
@@ -119,7 +120,7 @@ func getNext(vertices []vertex) *vertex {
 func traverse(from vertex, vertices []vertex, graph []path) []vertex {
 	newVertices := make([]vertex, len(vertices))
 	copy(newVertices, vertices)
-	current := &vertex{from.name, 0, false}
+	current := &from
 
 	for {
 		for j := range graph {
@@ -150,6 +151,13 @@ func traverse(from vertex, vertices []vertex, graph []path) []vertex {
 	return newVertices
 }
 
+func generatePaths(vertices []vertex, graph []path, valves map[string]valve) {
+	for key, value := range valves {
+		value.paths = traverse(vertex{value.name, 0, false}, vertices, graph)
+		valves[key] = value
+	}
+}
+
 func contains(visited []string, name string) bool {
 	for i := range visited {
 		if visited[i] == name {
@@ -176,7 +184,7 @@ func filtered(vertices []vertex, valves map[string]valve, visited []string) []ve
 	return result
 }
 
-func calculate(moveTo []vertex, vertices []vertex, graph []path, valves map[string]valve, visited []string, count int, rate int) int {
+func calculate(moveTo []vertex, valves map[string]valve, visited []string, count int, rate int) int {
 	if count >= 30 || len(moveTo) == 0 {
 		return rate
 	}
@@ -196,9 +204,9 @@ func calculate(moveTo []vertex, vertices []vertex, graph []path, valves map[stri
 		copy(newVisited, visited)
 		newVisited = append(newVisited, moveTo[i].name)
 
-		canGo := traverse(moveTo[i], vertices, graph)
+		canGo := valves[moveTo[i].name].paths
 		toCheck := filtered(canGo, valves, newVisited)
-		result := calculate(toCheck, vertices, graph, valves, newVisited, currentCount, rate+(30-currentCount)*val.rate)
+		result := calculate(toCheck, valves, newVisited, currentCount, rate+(30-currentCount)*val.rate)
 		if result > max {
 			max = result
 		}
@@ -207,10 +215,10 @@ func calculate(moveTo []vertex, vertices []vertex, graph []path, valves map[stri
 	return max
 }
 
-func part1(vertices []vertex, graph []path, valves map[string]valve) int {
-	canGo := traverse(vertices[0], vertices, graph)
+func part1(from vertex, valves map[string]valve) int {
+	canGo := valves[from.name].paths
 	toCheck := filtered(canGo, valves, []string{})
-	result := calculate(toCheck, vertices, graph, valves, []string{}, 0, 0)
+	result := calculate(toCheck, valves, []string{}, 0, 0)
 
 	return result
 }
@@ -229,5 +237,6 @@ func main() {
 
 	vertices, valves := readInput(file)
 	graph := buildGraph(valves)
-	fmt.Println("Part1:", part1(vertices, graph, valves))
+	generatePaths(vertices, graph, valves)
+	fmt.Println("Part1:", part1(vertices[0], valves))
 }
