@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"regexp"
-	"sort"
 	"strings"
 )
 
@@ -151,11 +150,25 @@ func traverse(from vertex, vertices []vertex, graph []path) []vertex {
 	return newVertices
 }
 
-func filter(vertices []vertex, valves map[string]valve) []vertex {
+func contains(visited []string, name string) bool {
+	for i := range visited {
+		if visited[i] == name {
+			return true
+		}
+	}
+
+	return false
+}
+
+func filtered(vertices []vertex, valves map[string]valve, visited []string) []vertex {
 	var result []vertex
 	for i := range vertices {
+		if contains(visited, vertices[i].name) {
+			continue
+		}
+
 		val, _ := valves[vertices[i].name]
-		if !val.open && val.rate > 0 {
+		if val.rate > 0 {
 			result = append(result, vertices[i])
 		}
 	}
@@ -163,50 +176,43 @@ func filter(vertices []vertex, valves map[string]valve) []vertex {
 	return result
 }
 
-func moveTo(vertices []vertex, valves map[string]valve) *vertex {
-	filtered := filter(vertices, valves)
-	if len(filtered) == 0 {
-		return nil
+func calculate(moveTo []vertex, vertices []vertex, graph []path, valves map[string]valve, visited []string, count int, rate int) int {
+	if count >= 30 || len(moveTo) == 0 {
+		return rate
 	}
 
-	sort.Slice(filtered, func(i, j int) bool {
-		return valves[filtered[i].name].rate-filtered[i].cost > valves[filtered[j].name].rate-filtered[j].cost
-	})
+	max := 0
+	for i := range moveTo {
+		currentCount := count + moveTo[i].cost + 1
+		if currentCount > 29 {
+			continue
+		}
 
-	return &filtered[0]
+		val, _ := valves[moveTo[i].name]
+		val.open = true
+		valves[moveTo[i].name] = val
+
+		newVisited := make([]string, len(visited))
+		copy(newVisited, visited)
+		newVisited = append(newVisited, moveTo[i].name)
+
+		canGo := traverse(moveTo[i], vertices, graph)
+		toCheck := filtered(canGo, valves, newVisited)
+		result := calculate(toCheck, vertices, graph, valves, newVisited, currentCount, rate+(30-currentCount)*val.rate)
+		if result > max {
+			max = result
+		}
+	}
+
+	return max
 }
 
 func part1(vertices []vertex, graph []path, valves map[string]valve) int {
-	count := 0
-	rate := 0
-	current := &vertices[0]
-	limit := 30
+	canGo := traverse(vertices[0], vertices, graph)
+	toCheck := filtered(canGo, valves, []string{})
+	result := calculate(toCheck, vertices, graph, valves, []string{}, 0, 0)
 
-	for {
-		if count >= limit {
-			break
-		}
-
-		val, _ := valves[current.name]
-		if !val.open && val.rate > 0 {
-			count++
-			val.open = true
-			rate += (limit - count) * val.rate
-			valves[current.name] = val
-			fmt.Println(current, count)
-		}
-
-		canGo := traverse(*current, vertices, graph)
-
-		current = moveTo(canGo, valves)
-		if current == nil {
-			break
-		}
-
-		count += current.cost
-	}
-
-	return rate
+	return result
 }
 
 func main() {
