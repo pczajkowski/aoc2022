@@ -16,9 +16,10 @@ type valve struct {
 	connections []string
 }
 
-func readInput(file *os.File) map[string]valve {
+func readInput(file *os.File) ([]string, map[string]valve) {
 	scanner := bufio.NewScanner(file)
 	valves := make(map[string]valve)
+	var vertices []string
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -47,10 +48,11 @@ func readInput(file *os.File) map[string]valve {
 			current.connections = append(current.connections, connection)
 		}
 
+		vertices = append(vertices, current.name)
 		valves[current.name] = current
 	}
 
-	return valves
+	return vertices, valves
 }
 
 type path struct {
@@ -82,7 +84,7 @@ func main() {
 
 	}
 
-	valves := readInput(file)
+	vertices, valves := readInput(file)
 	graph := buildGraph(valves)
-	fmt.Println(graph)
+	fmt.Println(vertices, graph)
 }
