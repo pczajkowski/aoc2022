@@ -184,7 +184,7 @@ func calculate(moveTo []vertex, vertices []vertex, graph []path, valves map[stri
 	max := 0
 	for i := range moveTo {
 		currentCount := count + moveTo[i].cost + 1
-		if currentCount > 29 {
+		if currentCount > 30 {
 			continue
 		}
 
