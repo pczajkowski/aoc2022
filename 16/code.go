@@ -56,13 +56,14 @@ func readInput(file *os.File) map[string]valve {
 type path struct {
 	from string
 	to   string
+	cost int
 }
 
 func buildGraph(valves map[string]valve) []path {
 	var graph []path
 	for key, value := range valves {
 		for i := range value.connections {
-			graph = append(graph, path{key, value.connections[i]})
+			graph = append(graph, path{key, value.connections[i], 1})
 		}
 	}
 
