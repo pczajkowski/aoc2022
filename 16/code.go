@@ -100,6 +100,15 @@ func getCost(name string, vertices []vertex) int {
 	return 0
 }
 
+func setStart(from vertex, vertices []vertex) {
+	for i := range vertices {
+		if vertices[i].name == from.name {
+			vertices[i].visited = true
+			vertices[i].cost = 0
+		}
+	}
+}
+
 func getNext(vertices []vertex) *vertex {
 	min := maxValue
 	var current *vertex
@@ -121,6 +130,7 @@ func traverse(from vertex, vertices []vertex, graph []path) []vertex {
 	newVertices := make([]vertex, len(vertices))
 	copy(newVertices, vertices)
 	current := &from
+	setStart(*current, newVertices)
 
 	for {
 		for j := range graph {
