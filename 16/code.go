@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -99,7 +100,7 @@ func getCost(name string, vertices []vertex) int {
 	return 0
 }
 
-func getNext(vertices []vertex, valves map[string]valve) *vertex {
+func getNext(vertices []vertex) *vertex {
 	min := maxValue
 	var current *vertex
 	for i := range vertices {
@@ -116,9 +117,11 @@ func getNext(vertices []vertex, valves map[string]valve) *vertex {
 	return current
 }
 
-func traverse(vertices []vertex, graph []path, valves map[string]valve) {
-	current := &vertices[0]
-	current.cost = 0
+func traverse(from vertex, vertices []vertex, graph []path) []vertex {
+	newVertices := make([]vertex, len(vertices))
+	copy(newVertices, vertices)
+	current := &vertex{from.name, 0, false}
+
 	for {
 		for j := range graph {
 			if graph[j].from != current.name {
@@ -129,24 +132,81 @@ func traverse(vertices []vertex, graph []path, valves map[string]valve) {
 			if current.cost == maxValue {
 				tentativeCost = maxValue
 			} else {
-				tentativeCost = current.cost + graph[j].cost
+				tentativeCost = current.cost + 1
 			}
 
-			if tentativeCost < getCost(graph[j].to, vertices) {
-				setCost(graph[j].to, tentativeCost, vertices)
+			if tentativeCost < getCost(graph[j].to, newVertices) {
+				setCost(graph[j].to, tentativeCost, newVertices)
 			}
 		}
 
-		val, _ := valves[current.name]
-		val.open = true
-		valves[current.name] = val
 		current.visited = true
 
-		current = getNext(vertices, valves)
+		current = getNext(newVertices)
 		if current == nil {
 			break
 		}
 	}
+
+	return newVertices
+}
+
+func filter(vertices []vertex, valves map[string]valve) []vertex {
+	var result []vertex
+	for i := range vertices {
+		val, _ := valves[vertices[i].name]
+		if !val.open && val.rate > 0 {
+			result = append(result, vertices[i])
+		}
+	}
+
+	return result
+}
+
+func moveTo(vertices []vertex, valves map[string]valve) *vertex {
+	filtered := filter(vertices, valves)
+	if len(filtered) == 0 {
+		return nil
+	}
+
+	sort.Slice(filtered, func(i, j int) bool {
+		return valves[filtered[i].name].rate-filtered[i].cost > valves[filtered[j].name].rate-filtered[j].cost
+	})
+
+	return &filtered[0]
+}
+
+func part1(vertices []vertex, graph []path, valves map[string]valve) int {
+	count := 0
+	rate := 0
+	current := &vertices[0]
+	limit := 30
+
+	for {
+		if count >= limit {
+			break
+		}
+
+		val, _ := valves[current.name]
+		if !val.open && val.rate > 0 {
+			count++
+			val.open = true
+			rate += (limit - count) * val.rate
+			valves[current.name] = val
+			fmt.Println(current, count)
+		}
+
+		canGo := traverse(*current, vertices, graph)
+
+		current = moveTo(canGo, valves)
+		if current == nil {
+			break
+		}
+
+		count += current.cost
+	}
+
+	return rate
 }
 
 func main() {
@@ -163,6 +223,5 @@ func main() {
 
 	vertices, valves := readInput(file)
 	graph := buildGraph(valves)
-	traverse(vertices, graph, valves)
-	fmt.Println(vertices, valves)
+	fmt.Println("Part1:", part1(vertices, graph, valves))
 }
