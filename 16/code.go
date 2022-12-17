@@ -53,6 +53,22 @@ func readInput(file *os.File) map[string]valve {
 	return valves
 }
 
+type path struct {
+	from string
+	to   string
+}
+
+func buildGraph(valves map[string]valve) []path {
+	var graph []path
+	for key, value := range valves {
+		for i := range value.connections {
+			graph = append(graph, path{key, value.connections[i]})
+		}
+	}
+
+	return graph
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -66,5 +82,6 @@ func main() {
 	}
 
 	valves := readInput(file)
-	fmt.Println(valves)
+	graph := buildGraph(valves)
+	fmt.Println(graph)
 }
