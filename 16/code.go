@@ -209,7 +209,6 @@ func calculate(moveTo []vertex, valves map[string]valve, visited []string, count
 		}
 
 		val, _ := valves[moveTo[i].name]
-		valves[moveTo[i].name] = val
 
 		newVisited := make([]string, len(visited))
 		copy(newVisited, visited)
