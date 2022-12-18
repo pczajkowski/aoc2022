@@ -144,7 +144,7 @@ func traverse(from vertex, vertices []vertex, graph []path) []vertex {
 			if current.cost == maxValue {
 				tentativeCost = maxValue
 			} else {
-				tentativeCost = current.cost + 1
+				tentativeCost = current.cost + graph[j].cost
 			}
 
 			if tentativeCost < getCost(graph[j].to, newVertices) {
