@@ -12,7 +12,6 @@ import (
 type valve struct {
 	name        string
 	rate        int
-	open        bool
 	connections []string
 	paths       []vertex
 }
@@ -23,7 +22,10 @@ type vertex struct {
 	visited bool
 }
 
-const maxValue int = 100000
+const (
+	maxValue int = 100000
+	limit    int = 30
+)
 
 func readInput(file *os.File) ([]vertex, map[string]valve) {
 	scanner := bufio.NewScanner(file)
@@ -195,19 +197,18 @@ func filtered(vertices []vertex, valves map[string]valve, visited []string) []ve
 }
 
 func calculate(moveTo []vertex, valves map[string]valve, visited []string, count int, rate int) int {
-	if count >= 30 || len(moveTo) == 0 {
+	if count == limit || len(moveTo) == 0 {
 		return rate
 	}
 
 	max := 0
 	for i := range moveTo {
 		currentCount := count + moveTo[i].cost + 1
-		if currentCount > 30 {
+		if currentCount > limit {
 			continue
 		}
 
 		val, _ := valves[moveTo[i].name]
-		val.open = true
 		valves[moveTo[i].name] = val
 
 		newVisited := make([]string, len(visited))
@@ -216,7 +217,7 @@ func calculate(moveTo []vertex, valves map[string]valve, visited []string, count
 
 		canGo := valves[moveTo[i].name].paths
 		toCheck := filtered(canGo, valves, newVisited)
-		result := calculate(toCheck, valves, newVisited, currentCount, rate+(30-currentCount)*val.rate)
+		result := calculate(toCheck, valves, newVisited, currentCount, rate+(limit-currentCount)*val.rate)
 		if result > max {
 			max = result
 		}
@@ -248,5 +249,5 @@ func main() {
 	vertices, valves := readInput(file)
 	graph := buildGraph(valves)
 	generatePaths(vertices, graph, valves)
-	fmt.Println("Part1:", part1(vertices[0], valves))
+	fmt.Println("Part1:", part1(vertex{"AA", 0, false}, valves))
 }
