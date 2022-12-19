@@ -90,96 +90,62 @@ func produce(robots inventory, resources inventory) inventory {
 	return resources
 }
 
-func shouldProduceOre(plan blueprint, robots inventory, resources inventory) bool {
+func shouldProduce(currentCount int, plan blueprint, robots inventory, robotsWith inventory, resources inventory, resourcesWith inventory, check func(blueprint, inventory) bool) bool {
+	if currentCount == 0 {
+		return true
+	}
+
 	countWithout := 0
-	without := resources
 	for {
-		if canProduceClay(plan, without) {
+		if check(plan, resources) {
 			break
 		}
 
-		without = produce(robots, without)
+		resources = produce(robots, resources)
 		countWithout++
 	}
 
 	countWith := 0
-	with := resources
-	with = produceOre(plan, with)
-	robots.ore++
 	for {
-		if canProduceClay(plan, with) {
+		if check(plan, resourcesWith) {
 			break
 		}
 
-		with = produce(robots, with)
+		resourcesWith = produce(robotsWith, resourcesWith)
 		countWith++
 	}
 
 	return countWith <= countWithout
+}
+
+func shouldProduceOre(plan blueprint, robots inventory, resources inventory) bool {
+	robotsWith := robots
+	robotsWith.ore++
+
+	resourcesWith := resources
+	resourcesWith = produceOre(plan, resourcesWith)
+
+	return shouldProduce(robots.ore, plan, robots, robotsWith, resources, resourcesWith, canProduceClay)
 }
 
 func shouldProduceClay(plan blueprint, robots inventory, resources inventory) bool {
-	if robots.clay == 0 {
-		return true
-	}
+	robotsWith := robots
+	robotsWith.clay++
 
-	countWithout := 0
-	without := resources
-	for {
-		if canProduceObsidian(plan, without) {
-			break
-		}
+	resourcesWith := resources
+	resourcesWith = produceClay(plan, resourcesWith)
 
-		without = produce(robots, without)
-		countWithout++
-	}
-
-	countWith := 0
-	with := resources
-	with = produceClay(plan, with)
-	robots.clay++
-	for {
-		if canProduceObsidian(plan, with) {
-			break
-		}
-
-		with = produce(robots, with)
-		countWith++
-	}
-
-	return countWith <= countWithout
+	return shouldProduce(robots.clay, plan, robots, robotsWith, resources, resourcesWith, canProduceObsidian)
 }
 
 func shouldProduceObsidian(plan blueprint, robots inventory, resources inventory) bool {
-	if robots.obsidian == 0 {
-		return true
-	}
+	robotsWith := robots
+	robotsWith.obsidian++
 
-	countWithout := 0
-	without := resources
-	for {
-		if canProduceGeode(plan, without) {
-			break
-		}
+	resourcesWith := resources
+	resourcesWith = produceObsidian(plan, resourcesWith)
 
-		without = produce(robots, without)
-		countWithout++
-	}
-
-	countWith := 0
-	with := resources
-	with = produceObsidian(plan, with)
-	robots.obsidian++
-	for {
-		if canProduceGeode(plan, with) {
-			break
-		}
-
-		with = produce(robots, with)
-		countWith++
-	}
-
-	return countWith <= countWithout
+	return shouldProduce(robots.obsidian, plan, robots, robotsWith, resources, resourcesWith, canProduceGeode)
 }
 
 func checkPlan(plan blueprint) int {
