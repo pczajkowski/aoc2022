@@ -37,6 +37,87 @@ func readInput(file *os.File) []blueprint {
 	return blueprints
 }
 
+type inventory struct {
+	ore      int
+	clay     int
+	obsidian int
+	geode    int
+}
+
+func canProduceClay(plan blueprint, resources inventory) bool {
+	return resources.ore >= plan.clayCost
+}
+
+func produceClay(plan blueprint, resources inventory) inventory {
+	resources.ore -= plan.clayCost
+	return resources
+}
+
+func canProduceObsidian(plan blueprint, resources inventory) bool {
+	return resources.ore >= plan.obsidianCost[0] && resources.clay >= plan.obsidianCost[1]
+}
+
+func produceObsidian(plan blueprint, resources inventory) inventory {
+	resources.ore -= plan.obsidianCost[0]
+	resources.clay -= plan.obsidianCost[1]
+	return resources
+}
+func canProduceGeode(plan blueprint, resources inventory) bool {
+	return resources.ore >= plan.geodeCost[0] && resources.obsidian >= plan.geodeCost[1]
+}
+
+func produceGeode(plan blueprint, resources inventory) inventory {
+	resources.ore -= plan.geodeCost[0]
+	resources.obsidian -= plan.geodeCost[1]
+	return resources
+}
+
+func produce(robots inventory, resources inventory) inventory {
+	resources.ore += robots.ore
+	resources.clay += robots.clay
+	resources.obsidian += robots.obsidian
+	resources.geode += robots.geode
+
+	return resources
+}
+
+func checkPlan(plan blueprint) int {
+	var robots inventory
+	robots.ore++
+
+	var resources inventory
+
+	for i := 0; i < 24; i++ {
+		resources = produce(robots, resources)
+
+		if canProduceGeode(plan, resources) {
+			robots.geode++
+			resources = produceGeode(plan, resources)
+		}
+
+		if canProduceObsidian(plan, resources) {
+			robots.obsidian++
+			resources = produceObsidian(plan, resources)
+		}
+
+		if canProduceClay(plan, resources) {
+			robots.clay++
+			resources = produceClay(plan, resources)
+		}
+	}
+
+	return resources.geode * plan.id
+}
+
+func part1(blueprints []blueprint) int {
+	sum := 0
+	for i := range blueprints {
+		sum += checkPlan(blueprints[i])
+	}
+
+	return sum
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -50,5 +131,5 @@ func main() {
 	}
 
 	blueprints := readInput(file)
-	fmt.Println(blueprints)
+	fmt.Println("Part1:", part1(blueprints))
 }
