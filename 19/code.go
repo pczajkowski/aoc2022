@@ -44,6 +44,15 @@ type inventory struct {
 	geode    int
 }
 
+func canProduceOre(plan blueprint, resources inventory) bool {
+	return resources.ore >= plan.oreCost
+}
+
+func produceOre(plan blueprint, resources inventory) inventory {
+	resources.ore -= plan.oreCost
+	return resources
+}
+
 func canProduceClay(plan blueprint, resources inventory) bool {
 	return resources.ore >= plan.clayCost
 }
@@ -81,6 +90,34 @@ func produce(robots inventory, resources inventory) inventory {
 	return resources
 }
 
+func shouldProduceOre(plan blueprint, robots inventory, resources inventory) bool {
+	countWithout := 0
+	without := resources
+	for {
+		if canProduceClay(plan, without) {
+			break
+		}
+
+		without = produce(robots, without)
+		countWithout++
+	}
+
+	countWith := 0
+	with := resources
+	with = produceOre(plan, with)
+	robots.ore++
+	for {
+		if canProduceClay(plan, with) {
+			break
+		}
+
+		with = produce(robots, with)
+		countWith++
+	}
+
+	return countWith <= countWithout
+}
+
 func shouldProduceClay(plan blueprint, robots inventory, resources inventory) bool {
 	if robots.clay == 0 {
 		return true
@@ -110,7 +147,7 @@ func shouldProduceClay(plan blueprint, robots inventory, resources inventory) bo
 		countWith++
 	}
 
-	return countWith < countWithout
+	return countWith <= countWithout
 }
 
 func shouldProduceObsidian(plan blueprint, robots inventory, resources inventory) bool {
@@ -142,7 +179,7 @@ func shouldProduceObsidian(plan blueprint, robots inventory, resources inventory
 		countWith++
 	}
 
-	return countWith < countWithout
+	return countWith <= countWithout
 }
 
 func checkPlan(plan blueprint) int {
@@ -156,19 +193,20 @@ func checkPlan(plan blueprint) int {
 		if canProduceGeode(plan, resources) {
 			newRobots.geode++
 			resources = produceGeode(plan, resources)
-		}
-
-		if canProduceObsidian(plan, resources) {
+		} else if canProduceObsidian(plan, resources) {
 			if shouldProduceObsidian(plan, robots, resources) {
 				newRobots.obsidian++
 				resources = produceObsidian(plan, resources)
 			}
-		}
-
-		if canProduceClay(plan, resources) {
+		} else if canProduceClay(plan, resources) {
 			if shouldProduceClay(plan, robots, resources) {
 				newRobots.clay++
 				resources = produceClay(plan, resources)
+			}
+		} else if canProduceOre(plan, resources) {
+			if shouldProduceClay(plan, robots, resources) {
+				newRobots.ore++
+				resources = produceOre(plan, resources)
 			}
 		}
 
