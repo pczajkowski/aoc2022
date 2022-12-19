@@ -82,30 +82,69 @@ func produce(robots inventory, resources inventory) inventory {
 }
 
 func shouldProduceClay(plan blueprint, robots inventory, resources inventory) bool {
-	catchUp := resources
-	for i := 0; i < plan.clayCost; i++ {
-		catchUp = produce(robots, catchUp)
+	if robots.clay == 0 {
+		return true
 	}
 
-	if canProduceObsidian(plan, catchUp) {
-		return false
+	countWithout := 0
+	without := resources
+	for {
+		if canProduceObsidian(plan, without) {
+			break
+		}
+
+		without = produce(robots, without)
+		countWithout++
 	}
 
-	return true
+	countWith := 0
+	with := resources
+	with = produceClay(plan, with)
+	robots.clay++
+	for {
+		if canProduceObsidian(plan, with) {
+			break
+		}
+
+		with = produce(robots, with)
+		countWith++
+	}
+
+	return countWith < countWithout
 }
 
 func shouldProduceObsidian(plan blueprint, robots inventory, resources inventory) bool {
-	catchUp := resources
-	for i := 0; i < plan.obsidianCost[0]; i++ {
-		catchUp = produce(robots, catchUp)
+	if robots.obsidian == 0 {
+		return true
 	}
 
-	if canProduceGeode(plan, catchUp) {
-		return false
+	countWithout := 0
+	without := resources
+	for {
+		if canProduceGeode(plan, without) {
+			break
+		}
+
+		without = produce(robots, without)
+		countWithout++
 	}
 
-	return true
+	countWith := 0
+	with := resources
+	with = produceObsidian(plan, with)
+	robots.obsidian++
+	for {
+		if canProduceGeode(plan, with) {
+			break
+		}
+
+		with = produce(robots, with)
+		countWith++
+	}
+
+	return countWith < countWithout
 }
+
 func checkPlan(plan blueprint) int {
 	var robots inventory
 	robots.ore++
