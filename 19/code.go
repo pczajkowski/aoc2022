@@ -198,12 +198,12 @@ func checkPlan(plan blueprint) int {
 				newRobots.obsidian++
 				resources = produceObsidian(plan, resources)
 			}
-		} else if canProduceClay(plan, resources) {
+		} else if robots.clay < plan.obsidianCost[1] && canProduceClay(plan, resources) {
 			if shouldProduceClay(plan, robots, resources) {
 				newRobots.clay++
 				resources = produceClay(plan, resources)
 			}
-		} else if canProduceOre(plan, resources) {
+		} else if robots.ore < plan.clayCost && canProduceOre(plan, resources) {
 			if shouldProduceClay(plan, robots, resources) {
 				newRobots.ore++
 				resources = produceOre(plan, resources)
