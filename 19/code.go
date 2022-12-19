@@ -94,6 +94,18 @@ func shouldProduceClay(plan blueprint, robots inventory, resources inventory) bo
 	return true
 }
 
+func shouldProduceObsidian(plan blueprint, robots inventory, resources inventory) bool {
+	catchUp := resources
+	for i := 0; i < plan.obsidianCost[0]; i++ {
+		catchUp = produce(robots, catchUp)
+	}
+
+	if canProduceGeode(plan, catchUp) {
+		return false
+	}
+
+	return true
+}
 func checkPlan(plan blueprint) int {
 	var robots inventory
 	robots.ore++
@@ -108,8 +120,10 @@ func checkPlan(plan blueprint) int {
 		}
 
 		if canProduceObsidian(plan, resources) {
-			newRobots.obsidian++
-			resources = produceObsidian(plan, resources)
+			if shouldProduceObsidian(plan, robots, resources) {
+				newRobots.obsidian++
+				resources = produceObsidian(plan, resources)
+			}
 		}
 
 		if canProduceClay(plan, resources) {
