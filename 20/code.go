@@ -80,28 +80,30 @@ func addAt(numbers []entry, value entry, index int) []entry {
 	return append(temp, numbers[index:]...)
 }
 
-func mix(numbers []entry) []entry {
+func mix(numbers []entry, times int) []entry {
 	size := len(numbers)
 	edge := size - 1
 	mixed := make([]entry, size)
 	copy(mixed, numbers)
 
-	for i := range numbers {
-		if numbers[i].value == 0 {
-			continue
+	for t := 0; t < times; t++ {
+		for i := range numbers {
+			if numbers[i].value == 0 {
+				continue
+			}
+
+			currentIndex := indexOf(mixed, numbers[i].id)
+			newIndex := establishNewIndex(edge, currentIndex, numbers[i].value)
+
+			mixed = removeAt(mixed, currentIndex)
+			mixed = addAt(mixed, numbers[i], newIndex)
 		}
-
-		currentIndex := indexOf(mixed, numbers[i].id)
-		newIndex := establishNewIndex(edge, currentIndex, numbers[i].value)
-
-		mixed = removeAt(mixed, currentIndex)
-		mixed = addAt(mixed, numbers[i], newIndex)
 	}
 
 	return mixed
 }
 
-func part1(mixed []entry) int {
+func calculate(mixed []entry) int {
 	zeroIndex := indexOf(mixed, -1)
 	result := 0
 	size := len(mixed)
@@ -127,6 +129,6 @@ func main() {
 	}
 
 	numbers := readInput(file)
-	mixed := mix(numbers)
-	fmt.Println("Part1:", part1(mixed))
+	mixed1 := mix(numbers, 1)
+	fmt.Println("Part1:", calculate(mixed1))
 }
