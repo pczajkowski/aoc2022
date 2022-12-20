@@ -116,6 +116,14 @@ func calculate(mixed []entry) int {
 	return result
 }
 
+func multiply(numbers []entry) []entry {
+	for i := range numbers {
+		numbers[i].value = numbers[i].value * 811589153
+	}
+
+	return numbers
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -131,4 +139,8 @@ func main() {
 	numbers := readInput(file)
 	mixed1 := mix(numbers, 1)
 	fmt.Println("Part1:", calculate(mixed1))
+
+	multiplied := multiply(numbers)
+	mixed10 := mix(multiplied, 10)
+	fmt.Println("Part2:", calculate(mixed10))
 }
