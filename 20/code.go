@@ -94,7 +94,7 @@ func part1(mixed []int) int {
 	size := len(mixed)
 
 	for i := 1; i < 4; i++ {
-		index := (zeroIndex + i*1000) % size
+		index := establishNewIndex(size, zeroIndex, i*1000)
 		result += mixed[index]
 	}
 
