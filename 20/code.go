@@ -91,6 +91,19 @@ func mix(numbers []int) []int {
 	return mixed
 }
 
+func part1(mixed []int) int {
+	zeroIndex := indexOf(mixed, 0)
+	result := 0
+	size := len(mixed)
+
+	for i := 1; i < 4; i++ {
+		newIndex := establishNewIndex(size, zeroIndex, i*1000)
+		result += mixed[newIndex-1]
+	}
+
+	return result
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -104,5 +117,6 @@ func main() {
 	}
 
 	numbers := readInput(file)
-	fmt.Println(mix(numbers))
+	mixed := mix(numbers)
+	fmt.Println("Part1:", part1(mixed))
 }
