@@ -48,11 +48,7 @@ func establishNewIndex(size int, current int, value int) int {
 		return size - rest
 	}
 
-	if delta >= size {
-		return delta % size
-	}
-
-	return delta
+	return delta % size
 }
 
 func removeAt(numbers []int, index int) []int {
