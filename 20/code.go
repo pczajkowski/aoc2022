@@ -42,14 +42,14 @@ func indexOf(numbers []int, number int) int {
 func establishNewIndex(size int, current int, value int) int {
 	delta := current + value
 	if delta <= 0 {
-		delta = 0 - delta + 1
+		delta = 0 - delta
 		rest := delta % size
 
 		return size - rest
 	}
 
 	if delta >= size {
-		return delta%size + 1
+		return delta % size
 	}
 
 	return delta
@@ -73,6 +73,7 @@ func addAt(numbers []int, value int, index int) []int {
 
 func mix(numbers []int) []int {
 	size := len(numbers)
+	edge := size - 1
 	mixed := make([]int, size)
 	copy(mixed, numbers)
 
@@ -82,7 +83,7 @@ func mix(numbers []int) []int {
 		}
 
 		currentIndex := indexOf(mixed, numbers[i])
-		newIndex := establishNewIndex(size, currentIndex, numbers[i])
+		newIndex := establishNewIndex(edge, currentIndex, numbers[i])
 
 		mixed = removeAt(mixed, currentIndex)
 		mixed = addAt(mixed, numbers[i], newIndex)
@@ -97,8 +98,8 @@ func part1(mixed []int) int {
 	size := len(mixed)
 
 	for i := 1; i < 4; i++ {
-		newIndex := establishNewIndex(size, zeroIndex, i*1000)
-		result += mixed[newIndex-1]
+		index := (zeroIndex + i*1000) % size
+		result += mixed[index]
 	}
 
 	return result
