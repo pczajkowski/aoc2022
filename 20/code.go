@@ -7,9 +7,15 @@ import (
 	"os"
 )
 
-func readInput(file *os.File) []int {
+type entry struct {
+	value int
+	id    int
+}
+
+func readInput(file *os.File) []entry {
 	scanner := bufio.NewScanner(file)
-	var numbers []int
+	var numbers []entry
+	count := 0
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -17,21 +23,28 @@ func readInput(file *os.File) []int {
 			continue
 		}
 
-		var current int
-		n, err := fmt.Sscanf(line, "%d", &current)
+		var current entry
+		n, err := fmt.Sscanf(line, "%d", &current.value)
 		if n != 1 || err != nil {
 			log.Fatal("Can't parse:", line, err)
 		}
 
+		if current.value == 0 {
+			current.id = -1
+		} else {
+			current.id = count
+		}
+
 		numbers = append(numbers, current)
+		count++
 	}
 
 	return numbers
 }
 
-func indexOf(numbers []int, number int) int {
+func indexOf(numbers []entry, id int) int {
 	for i := range numbers {
-		if numbers[i] == number {
+		if numbers[i].id == id {
 			return i
 		}
 	}
@@ -39,47 +52,47 @@ func indexOf(numbers []int, number int) int {
 	return -1
 }
 
-func establishNewIndex(size int, current int, value int) int {
+func establishNewIndex(edge int, current int, value int) int {
 	delta := current + value
 	if delta <= 0 {
 		delta = 0 - delta
-		rest := delta % size
+		rest := delta % edge
 
-		return size - rest
+		return edge - rest
 	}
 
-	return delta % size
+	return delta % edge
 }
 
-func removeAt(numbers []int, index int) []int {
+func removeAt(numbers []entry, index int) []entry {
 	return append(numbers[:index], numbers[index+1:]...)
 }
 
-func addAt(numbers []int, value int, index int) []int {
+func addAt(numbers []entry, value entry, index int) []entry {
 	if index >= len(numbers) {
 		return append(numbers, value)
 	}
 
-	var temp []int
+	var temp []entry
 	temp = append(temp, numbers[:index]...)
 	temp = append(temp, value)
 
 	return append(temp, numbers[index:]...)
 }
 
-func mix(numbers []int) []int {
+func mix(numbers []entry) []entry {
 	size := len(numbers)
 	edge := size - 1
-	mixed := make([]int, size)
+	mixed := make([]entry, size)
 	copy(mixed, numbers)
 
 	for i := range numbers {
-		if numbers[i] == 0 {
+		if numbers[i].value == 0 {
 			continue
 		}
 
-		currentIndex := indexOf(mixed, numbers[i])
-		newIndex := establishNewIndex(edge, currentIndex, numbers[i])
+		currentIndex := indexOf(mixed, numbers[i].id)
+		newIndex := establishNewIndex(edge, currentIndex, numbers[i].value)
 
 		mixed = removeAt(mixed, currentIndex)
 		mixed = addAt(mixed, numbers[i], newIndex)
@@ -88,14 +101,14 @@ func mix(numbers []int) []int {
 	return mixed
 }
 
-func part1(mixed []int) int {
-	zeroIndex := indexOf(mixed, 0)
+func part1(mixed []entry) int {
+	zeroIndex := indexOf(mixed, -1)
 	result := 0
 	size := len(mixed)
 
 	for i := 1; i < 4; i++ {
 		index := establishNewIndex(size, zeroIndex, i*1000)
-		result += mixed[index]
+		result += mixed[index].value
 	}
 
 	return result
