@@ -56,6 +56,25 @@ func readInput(file *os.File) map[string]monkey {
 	return monkeys
 }
 
+func processMonkey(being monkey, monkeys map[string]monkey) int {
+	if being.spec == val {
+		return being.value
+	}
+
+	switch being.op {
+	case '+':
+		return processMonkey(monkeys[being.left], monkeys) + processMonkey(monkeys[being.right], monkeys)
+	case '-':
+		return processMonkey(monkeys[being.left], monkeys) - processMonkey(monkeys[being.right], monkeys)
+	case '*':
+		return processMonkey(monkeys[being.left], monkeys) * processMonkey(monkeys[being.right], monkeys)
+	case '/':
+		return processMonkey(monkeys[being.left], monkeys) / processMonkey(monkeys[being.right], monkeys)
+	}
+
+	return 0
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -69,5 +88,5 @@ func main() {
 	}
 
 	monkeys := readInput(file)
-	fmt.Println(monkeys)
+	fmt.Println("Part1:", processMonkey(monkeys["root"], monkeys))
 }
