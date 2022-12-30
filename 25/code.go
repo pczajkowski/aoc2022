@@ -24,8 +24,9 @@ func getNumber(char byte) int {
 	return 300
 }
 
+const multiplier int = 5
+
 func fromSnafu(text string) int {
-	multiplier := 5
 	modifier := 1
 	end := len(text) - 1
 	result := 0
@@ -108,8 +109,8 @@ func toSnafu(number int) string {
 			break
 		}
 
-		rem := number % 5
-		number /= 5
+		rem := number % multiplier
+		number /= multiplier
 		if rem == 3 {
 			rem = -2
 			number += 1
