@@ -55,6 +55,15 @@ func readInput(file *os.File) []int {
 	return numbers
 }
 
+func sum(numbers []int) int {
+	sum := 0
+	for i := range numbers {
+		sum += numbers[i]
+	}
+
+	return sum
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -68,5 +77,5 @@ func main() {
 	}
 
 	numbers := readInput(file)
-	fmt.Println(numbers)
+	fmt.Println(sum(numbers))
 }
