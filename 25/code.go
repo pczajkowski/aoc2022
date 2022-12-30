@@ -64,6 +64,66 @@ func sum(numbers []int) int {
 	return sum
 }
 
+func getChar(number int) byte {
+	switch number {
+	case 2:
+		return '2'
+	case 1:
+		return '1'
+	case 0:
+		return '0'
+	case -1:
+		return '-'
+	case -2:
+		return '='
+	}
+
+	return ' '
+}
+
+func toSnafu(number int) string {
+	multiplier := 5
+	modifier := 1
+	count := 1
+	var result []byte
+
+	found := false
+	toMatch := 0
+	for {
+		for i := 1; i < 3; i++ {
+			if i*modifier >= number {
+				found = true
+				result = append(result, getChar(i))
+				toMatch = modifier*i - number
+				break
+			}
+		}
+
+		if found {
+			break
+		}
+
+		modifier *= multiplier
+		count++
+	}
+
+	for i := 1; i < count; i++ {
+		modifier /= multiplier
+
+		for j := -2; j <= 2; j++ {
+			p := j * modifier
+			delta := toMatch + p
+			if delta >= 0 || 0-delta < 2*modifier/multiplier {
+				result = append(result, getChar(j))
+				toMatch = delta
+				break
+			}
+		}
+	}
+
+	return string(result)
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You need to specify a file!")
@@ -77,5 +137,7 @@ func main() {
 	}
 
 	numbers := readInput(file)
-	fmt.Println(sum(numbers))
+	sum := sum(numbers)
+	fmt.Println(sum)
+	fmt.Println(toSnafu(sum))
 }
