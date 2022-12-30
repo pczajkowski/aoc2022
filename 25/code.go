@@ -81,47 +81,47 @@ func getChar(number int) byte {
 	return ' '
 }
 
+func abs(number int) int {
+	if number < 0 {
+		return 0 - number
+	}
+
+	return number
+}
+
+func reverse(bytes []byte) []byte {
+	edge := len(bytes) - 1
+	var reversed []byte
+
+	for i := edge; i >= 0; i-- {
+		reversed = append(reversed, bytes[i])
+	}
+
+	return reversed
+}
+
 func toSnafu(number int) string {
-	multiplier := 5
-	modifier := 1
-	count := 1
 	var result []byte
 
-	found := false
-	toMatch := 0
 	for {
-		for i := 1; i < 3; i++ {
-			if i*modifier >= number {
-				found = true
-				result = append(result, getChar(i))
-				toMatch = modifier*i - number
-				break
-			}
-		}
-
-		if found {
+		if number <= 0 {
 			break
 		}
 
-		modifier *= multiplier
-		count++
-	}
-
-	for i := 1; i < count; i++ {
-		modifier /= multiplier
-
-		for j := -2; j <= 2; j++ {
-			p := j * modifier
-			delta := toMatch + p
-			if delta >= 0 || 0-delta < 2*modifier/multiplier {
-				result = append(result, getChar(j))
-				toMatch = delta
-				break
-			}
+		rem := number % 5
+		number /= 5
+		if rem == 3 {
+			rem = -2
+			number += 1
+		} else if rem == 4 {
+			rem = -1
+			number++
 		}
+
+		result = append(result, getChar(rem))
 	}
 
-	return string(result)
+	return string(reverse(result))
 }
 
 func main() {
@@ -138,6 +138,5 @@ func main() {
 
 	numbers := readInput(file)
 	sum := sum(numbers)
-	fmt.Println(sum)
-	fmt.Println(toSnafu(sum))
+	fmt.Println("Part1:", toSnafu(sum))
 }
